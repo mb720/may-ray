@@ -1,11 +1,11 @@
 package com.bullbytes.mayray.http;
 
-import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
@@ -25,29 +25,27 @@ public enum Responses {
      * Responds with plain text.
      *
      * @param status   the {@link StatusCode} sent to the client
-     * @param response the textual response
+     * @param response the textual response sent to the client
      * @param exchange the {@link HttpExchange} object used to create the response
-     * @throws IOException if sending the response failed
-     * @see HttpExchange
      */
-    public static void send(StatusCode status,
-                            String response,
-                            HttpExchange exchange) throws IOException {
+    public static void sendPlainText(StatusCode status,
+                                     String response,
+                                     HttpExchange exchange) {
 
-//        log.info("Handling request from remote address '{}'", exchange.getRemoteAddress());
-//        logHeaders(exchange);
-
-        // Consume the request body to make the underlying TCP connection reusable for following exchanges
-        readRequestBody(exchange);
-
-        setContentType(exchange, "text/plain");
-
-        Charset utf8 = StandardCharsets.UTF_8;
-        exchange.sendResponseHeaders(status.getCode(), response.getBytes(utf8).length);
-        // We have to write and close the response body's output stream to send a response to the client.
+        // We have to write and close the response body's output stream to sendPlainText a response to the client.
         // Closing the output stream automatically closes the input stream as well
         try (var outputStream = exchange.getResponseBody()) {
+            // Consume the request body to make the underlying TCP connection reusable for following exchanges
+            readRequestBody(exchange);
+
+            setContentType(exchange, "text/plain");
+
+            Charset utf8 = StandardCharsets.UTF_8;
+            exchange.sendResponseHeaders(status.getCode(), response.getBytes(utf8).length);
+
             outputStream.write(response.getBytes(utf8));
+        } catch (IOException e) {
+            log.warn("Could not send plain text '{}' with status '{}'", response, status, e);
         }
     }
 
@@ -61,30 +59,24 @@ public enum Responses {
         }
     }
 
-    private static void logHeaders(HttpExchange exchange) {
-        Headers reqHeaders = exchange.getRequestHeaders();
-        log.info("Request headers:");
-        reqHeaders.forEach((key, value) -> log.info("{}: {}", key, value));
-    }
-
-    public static void sendImage(HttpExchange exchange) throws IOException {
-        log.info("Sending image");
-
-        // Consume the request body to make the underlying TCP connection reusable for following exchanges
-        readRequestBody(exchange);
-
-        setContentType(exchange, "image/jpeg");
-
+    public static void sendImage(String imgUrl, HttpExchange exchange) {
         try (var outputStream = exchange.getResponseBody();
-             var resourceAsStream = Responses.class.getResourceAsStream("/images/spj.jpg");) {
+             var imgAsStream = new URL(imgUrl).openStream()) {
 
-            var imageAsBytes = resourceAsStream.readAllBytes();
+            // Consume the request body to make the underlying TCP connection reusable for following exchanges
+            readRequestBody(exchange);
+
+            setContentType(exchange, "image/jpeg");
+
+            var imageAsBytes = imgAsStream.readAllBytes();
 
             exchange.sendResponseHeaders(SUCCESS.getCode(), imageAsBytes.length);
 
             outputStream.write(imageAsBytes);
-        }
 
-        send(SUCCESS, "Not yet implemented", exchange);
+        } catch (IOException e) {
+            log.warn("Could not respond with image at {}", imgUrl, e);
+            sendPlainText(StatusCode.SERVER_ERROR, "Error while sending image", exchange);
+        }
     }
 }

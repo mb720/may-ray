@@ -18,7 +18,7 @@ public enum RequestHandlers {
     private static final String QUOTE = "/quote";
     private static final String NAME = "/name";
     private static final String IMG = "/img.jpg";
-    private static final String INFO_ABOUT_PERSON_RESOURCES = "You can request the 'name', an 'img.jpg', or a 'quote' of this person\n";
+    private static final String INFO_ABOUT_PERSON_RESOURCES = "You can request the 'name', an 'img.jpg', or a 'quote' of this person.\n";
 
     public static void addHandlers(HttpServer server) {
         server.createContext("/", getRootHandler());

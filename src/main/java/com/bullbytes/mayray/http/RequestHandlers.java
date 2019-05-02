@@ -17,8 +17,9 @@ public enum RequestHandlers {
     ;
     private static final String QUOTE = "/quote";
     private static final String NAME = "/name";
+    private static final String ROLE = "/role";
     private static final String IMG = "/img.jpg";
-    private static final String INFO_ABOUT_PERSON_RESOURCES = "You can request the 'name', an 'img.jpg', or a 'quote' of this person.\n";
+    private static final String INFO_ABOUT_PERSON_RESOURCES = "You can request the 'name', an 'img.jpg', a 'quote', or the 'role' of this person.\n";
 
     public static void addHandlers(HttpServer server) {
         server.createContext("/", getRootHandler());
@@ -32,16 +33,18 @@ public enum RequestHandlers {
         var name = "Grace Hopper\n";
         var imgUrl = "http://ww2.kqed.org/mindshift/wp-content/uploads/sites/23/2014/10/grace-hopper_custom-7e094af0ae451cd447568fd03d9c89ba6bf8b352.jpg";
         var quote = "\"A ship in port is safe, but that's not what ships are built for.\"";
+        var role = "Computer engineering pioneer\n";
 
-        return getPersonHandler(name, imgUrl, quote);
+        return getPersonHandler(name, imgUrl, quote, role);
     }
 
     private static HttpHandler getLinusHandler() {
         var name = "Linus Torvald\ns";
         var imgUrl = "http://cdn.facesofopensource.com/wp-content/uploads/2017/03/16181944/linustorvalds.faces22106.web_.jpg";
         var quote = "\"Intelligence is the ability to avoid doing work, yet getting the work done.\"\n";
+        var role = "Inventor of Linux\n";
 
-        return getPersonHandler(name, imgUrl, quote);
+        return getPersonHandler(name, imgUrl, quote, role);
     }
 
     private static HttpHandler getAdaHandler() {
@@ -49,18 +52,21 @@ public enum RequestHandlers {
         var imgUrl = "https://upload.wikimedia.org/wikipedia/commons/a/a4/Ada_Lovelace_portrait.jpg";
         var quote = "\"The Analytical Engine has no pretensions whatever to originate anything. " +
                 "It can do whatever we know how to order it to perform.\"\n";
+        var role = "First programmer\n";
 
-        return getPersonHandler(name, imgUrl, quote);
+        return getPersonHandler(name, imgUrl, quote, role);
     }
 
     private static HttpHandler getSimonPeytonJonesHandler() {
         var name = "Simon Peyton Jones\n";
         var imgUrl = "https://www.microsoft.com/en-us/research/wp-content/uploads/2016/08/TEDx-Mar14-1.jpg";
         var quote = "\"When the limestone of imperative programming is worn away, the granite of functional programming will be observed.\"\n";
-        return getPersonHandler(name, imgUrl, quote);
+        var role = "Inventor of the Haskell programming language\n";
+
+        return getPersonHandler(name, imgUrl, quote, role);
     }
 
-    private static void getPersonResource(HttpExchange exchange, String name, String imgUrl, String quote) {
+    private static void getPersonResource(HttpExchange exchange, String name, String imgUrl, String quote, String role) {
         String resource = getRequestedResource(exchange);
         switch (resource) {
             case "":
@@ -74,6 +80,9 @@ public enum RequestHandlers {
                 break;
             case NAME:
                 Responses.sendPlainText(SUCCESS, name, exchange);
+                break;
+            case ROLE:
+                Responses.sendPlainText(SUCCESS, role, exchange);
                 break;
             default:
                 Responses.sendPlainText(NOT_FOUND, unknownResource(resource), exchange);
@@ -102,10 +111,10 @@ public enum RequestHandlers {
         };
     }
 
-    private static HttpHandler getPersonHandler(String name, String imgUrl, String quote) {
+    private static HttpHandler getPersonHandler(String name, String imgUrl, String quote, String role) {
         return exchange -> {
             if (RequestMethod.GET == Requests.getMethod(exchange)) {
-                getPersonResource(exchange, name, imgUrl, quote);
+                getPersonResource(exchange, name, imgUrl, quote, role);
             } else {
                 unsupportedMethod(exchange);
             }

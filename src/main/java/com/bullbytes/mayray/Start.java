@@ -47,7 +47,7 @@ public enum Start {
 
     private static HttpHandler getRootHandler() {
         return exchange -> {
-            log.info("Handling request");
+            log.info("Handling request from remote address '{}'", exchange.getRemoteAddress());
             logHeaders(exchange);
 
             switch (Requests.getMethod(exchange)) {

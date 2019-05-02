@@ -1,0 +1,28 @@
+// The wrapper task generates gradlew(.bat) scripts.
+// Run "./gradlew wrapper" to upgrade Gradle.
+// Wrapper API: https://docs.gradle.org/current/dsl/org.gradle.api.tasks.wrapper.Wrapper.html
+wrapper {
+    // https://docs.gradle.org/current/release-notes.html
+    gradleVersion = "5.4.1"
+    // Include Gradle documentation and source
+    distributionType = Wrapper.DistributionType.ALL
+}
+
+// This is a runnable application: We can start it using gradlew run
+apply plugin: "application"
+apply plugin: "java"
+
+mainClassName = "com.bullbytes.mayray.Start"
+
+sourceCompatibility = 11
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Logging: https://www.slf4j.org/
+    // Binding for java.util.logging, also referred to as JDK 1.4 logging
+    // https://mvnrepository.com/artifact/org.slf4j/slf4j-jdk14
+    compile 'org.slf4j:slf4j-jdk14:1.8.0-beta4'
+}

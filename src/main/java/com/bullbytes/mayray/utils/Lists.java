@@ -3,6 +3,7 @@ package com.bullbytes.mayray.utils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Helps with {@link List}s.
@@ -25,4 +26,18 @@ public enum Lists {
         list.addAll(rest);
         return list;
     }
+
+    public static <T> Optional<T> first(List<? extends T> list) {
+        return list.isEmpty() ? Optional.empty() :
+                Optional.ofNullable(list.get(0));
+    }
+
+    public static <T> List<T> reverse(List<? extends T> list) {
+        var reversed = new ArrayList<T>();
+        for (int i = list.size() - 1; i >= 0; i--) {
+            reversed.add(list.get(i));
+        }
+        return reversed;
+    }
+
 }

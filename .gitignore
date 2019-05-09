@@ -8,3 +8,6 @@
 .idea
 .attach_pid*
 build
+
+out/
+logs

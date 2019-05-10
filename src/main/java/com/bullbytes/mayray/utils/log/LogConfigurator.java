@@ -24,10 +24,10 @@ import java.util.logging.*;
  * <p>
  * Person of contact: Matthias Braun
  */
-public enum LoggingConfigurator {
+public enum LogConfigurator {
     ;
 
-    private static final Logger log = LoggerFactory.getLogger(LoggingConfigurator.class);
+    private static final Logger log = LoggerFactory.getLogger(LogConfigurator.class);
     // The directory where the file handler creates the log files
     private static final String LOG_DIR = "logs";
 
@@ -39,8 +39,12 @@ public enum LoggingConfigurator {
      */
     public static void configureLogHandlers(String appName) {
         Formatter formatter = getCustomFormatter();
-        LoggingUtil.getDefaultConsoleHandler().ifPresentOrElse(
-                consoleHandler -> consoleHandler.setFormatter(formatter),
+        LogUtil.getDefaultConsoleHandler().ifPresentOrElse(
+                consoleHandler -> {
+                    // The console handler will print all levels of messages the log creates
+                    consoleHandler.setLevel(Level.ALL);
+                    consoleHandler.setFormatter(formatter);
+                },
                 () -> System.err.println("Could not get default ConsoleHandler"));
 
         addFileHandler(appName, formatter);
@@ -62,11 +66,11 @@ public enum LoggingConfigurator {
                 /*
                  * Formats a log message like this:
                  * <p>
-                 * INFO    Server started [2019-05-09 18:08:16] [com.bullbytes.mayray.Start.lambda$main$1] [main]
+                 * INFO    Server started [2019-05-09 18:08:16 +0200] [com.bullbytes.mayray.Start.lambda$main$1] [main]
                  * <p>
                  * See also: https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/Formatter.html
                  */
-                var FORMAT_STRING = "%2$-7s %6$s [%1$tF %1$tT] [%4$s.%5$s] [%3$s]%n%7$s";
+                var FORMAT_STRING = "%2$-7s %6$s [%1$tF %1$tT %1$tz] [%4$s.%5$s] [%3$s]%n%7$s";
                 return String.format(
                         FORMAT_STRING,
                         dateTime,
@@ -104,10 +108,11 @@ public enum LoggingConfigurator {
             boolean appendMessages = true;
             var fileHandler = new FileHandler(logFile.toString(), appendMessages);
             fileHandler.setFormatter(formatter);
-            fileHandler.setLevel(Level.INFO);
+            // The file handler will write all levels of messages the log creates
+            fileHandler.setLevel(Level.ALL);
             fileHandler.setEncoding(StandardCharsets.UTF_8.displayName(Locale.ROOT));
 
-            LoggingUtil.getRootLogger().addHandler(fileHandler);
+            LogUtil.getRootLogger().addHandler(fileHandler);
             log.info("Added FileHandler that logs to {}", logFile.toAbsolutePath().normalize());
         } catch (IOException e) {
             log.warn("Could not create FileHandler that logs to {}. Is the location writable?", logFile, e);

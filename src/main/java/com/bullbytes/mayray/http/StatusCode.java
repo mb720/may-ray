@@ -6,7 +6,7 @@ package com.bullbytes.mayray.http;
  * Person of contact: Matthias Braun
  */
 public enum StatusCode {
-    SUCCESS(200), NOT_FOUND(404), SERVER_ERROR(500);
+    SUCCESS(200), NOT_FOUND(404), SERVER_ERROR(500), METHOD_NOT_ALLOWED(405);
 
     private final int code;
 

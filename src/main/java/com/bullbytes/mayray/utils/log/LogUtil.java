@@ -15,7 +15,7 @@ import static java.util.Arrays.asList;
  * <p>
  * Person of contact: Matthias Braun
  */
-public enum LoggingUtil {
+public enum LogUtil {
     ;
 
     /**

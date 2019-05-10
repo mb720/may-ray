@@ -4,8 +4,10 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
-import static com.bullbytes.mayray.http.StatusCode.NOT_FOUND;
-import static com.bullbytes.mayray.http.StatusCode.SUCCESS;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+
+import static com.bullbytes.mayray.http.StatusCode.*;
 import static java.lang.String.format;
 
 /**
@@ -101,9 +103,18 @@ public enum RequestHandlers {
 
     private static HttpHandler getRootHandler() {
         return exchange -> {
+            String rootResponse = "You're at the root now\n";
             switch (Requests.getMethod(exchange)) {
                 case GET:
-                    Responses.sendPlainText(SUCCESS, "You're at the root now\n", exchange);
+                    Responses.sendPlainText(SUCCESS, rootResponse, exchange);
+                    break;
+                case HEAD:
+                    exchange.getResponseHeaders().add("Content-Length", String.valueOf(rootResponse.getBytes(StandardCharsets.UTF_8).length));
+                    // -1 Means no response body is being sent
+                    exchange.sendResponseHeaders(SUCCESS.getCode(), -1);
+                    // The body of a response to a HEAD method must be empty, but we need to close the input stream
+                    // to send the response
+                    exchange.getResponseBody().close();
                     break;
                 default:
                     unsupportedMethod(exchange);
@@ -121,9 +132,9 @@ public enum RequestHandlers {
         };
     }
 
-    private static void unsupportedMethod(HttpExchange exchange) {
-        Responses.sendPlainText(NOT_FOUND, format("Can't handle request of type %s, sorry\n",
-                exchange.getRequestMethod()),
-                exchange);
+    private static void unsupportedMethod(HttpExchange exchange) throws IOException {
+        exchange.getResponseHeaders().add("Allow", "GET");
+        exchange.sendResponseHeaders(METHOD_NOT_ALLOWED.getCode(), -1);
+        exchange.getResponseBody().close();
     }
 }

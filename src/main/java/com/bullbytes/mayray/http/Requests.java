@@ -23,6 +23,9 @@ public enum Requests {
             case "post":
                 method = RequestMethod.POST;
                 break;
+            case "head":
+                method = RequestMethod.HEAD;
+                break;
             default:
                 method = RequestMethod.OTHER;
         }

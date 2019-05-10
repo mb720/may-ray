@@ -4,7 +4,8 @@ import com.bullbytes.mayray.http.RequestHandlers;
 import com.bullbytes.mayray.utils.Lists;
 import com.bullbytes.mayray.utils.Ports;
 import com.bullbytes.mayray.utils.Ranges;
-import com.bullbytes.mayray.utils.log.LoggingConfigurator;
+import com.bullbytes.mayray.utils.log.LogConfigurator;
+import com.bullbytes.mayray.utils.log.LogUtil;
 import com.sun.net.httpserver.HttpServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +13,8 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.net.InetSocketAddress;
+import java.util.Arrays;
+import java.util.logging.Level;
 
 /**
  * Starts our server.
@@ -44,7 +47,8 @@ public enum Start {
      */
     public static void main(String... args) {
         var appName = "may-ray";
-        LoggingConfigurator.configureLogHandlers(appName);
+        configureLogging(appName);
+
         logRuntimeInfo();
 
         var host = "0.0.0.0";
@@ -69,5 +73,16 @@ public enum Start {
 
         }, () -> log.error("Could not find open port in this range: {}", portRange));
 
+    }
+
+    private static void configureLogging(String appName) {
+        Level logLevel = Level.INFO;
+        // Note that we can set the log level on both the logger and the log handlers
+        LogUtil.getRootLogger().setLevel(logLevel);
+        LogConfigurator.configureLogHandlers(appName);
+
+        log.info("Log level: {}", logLevel);
+        Arrays.stream(LogUtil.getRootLogger().getHandlers())
+                .forEach(handler -> log.info("Handler: '{}'. Log level: {}", handler.getClass(), handler.getLevel()));
     }
 }

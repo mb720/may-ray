@@ -45,7 +45,7 @@ public enum Responses {
 
             outputStream.write(response.getBytes(utf8));
         } catch (IOException e) {
-            if (!isBrokenPipe(e)) {
+            if (shouldLog(e)) {
                 log.warn("Could not send plain text '{}' with status '{}'", response, status, e);
             }
         }
@@ -78,15 +78,18 @@ public enum Responses {
             outputStream.write(imageAsBytes);
 
         } catch (IOException e) {
-            // We don't log the case when the client has abruptly ended the connection
-            if (!isBrokenPipe(e)) {
+            if (shouldLog(e)) {
                 log.warn("Could not respond with image at {}", imgUrl, e);
                 sendPlainText(StatusCode.SERVER_ERROR, "Error while sending image", exchange);
             }
         }
     }
 
-    private static boolean isBrokenPipe(IOException e) {
-        return "Broken pipe".equals(e.getMessage());
+    private static boolean shouldLog(IOException e) {
+        String msg = e.getMessage();
+
+        // We don't log the case where the client has abruptly ended the connection
+        return !("Broken pipe".equals(msg) || "Connection reset by peer".equals(msg));
     }
+
 }

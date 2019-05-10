@@ -6,5 +6,5 @@ package com.bullbytes.mayray.http;
  * Person of contact: Matthias Braun
  */
 public enum RequestMethod {
-    GET, OTHER, POST;
+    GET, POST, HEAD, OTHER,
 }

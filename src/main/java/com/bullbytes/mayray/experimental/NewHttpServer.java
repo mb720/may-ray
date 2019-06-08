@@ -1,7 +1,6 @@
-package com.bullbytes.mayray;
+package com.bullbytes.mayray.experimental;
 
-import io.atlassian.fugue.Checked;
-import io.atlassian.fugue.Try;
+import io.vavr.control.Try;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,7 +35,7 @@ final class NewHttpServer {
         int backlog = 0;
 
         // Bind the socket to the given port and address
-        var socketTry = Checked.now(() -> new ServerSocket(address.getPort(), backlog, address.getAddress()));
+        var socketTry = Try.of(() -> new ServerSocket(address.getPort(), backlog, address.getAddress()));
 
         return socketTry.map(NewHttpServer::create);
     }

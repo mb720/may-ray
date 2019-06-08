@@ -11,3 +11,9 @@ build
 
 out/
 logs
+
+downloadable
+metrics.json
+plot.htm
+results.bin
+zipFiles/

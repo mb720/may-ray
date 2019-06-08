@@ -1,22 +1,58 @@
 package com.bullbytes.mayray.utils;
 
-
-import io.atlassian.fugue.Try;
+import io.vavr.collection.List;
+import io.vavr.control.Try;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.InvalidPathException;
-import java.nio.file.Path;
-import java.util.List;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
- * Constants and functions for dealing with files.
+ * Helps with files.
  * <p>
- * Persons of contact: Martin Gangl, Matthias Braun
+ * Person of contact: Matthias Braun
  */
-public enum IOUtil {
+public enum FileUtil {
     ;
+
+    private static final Logger log = LoggerFactory.getLogger(FileUtil.class);
+
+    public static Try<Path> zipAllFiles(Path dirToZip, Path zipFilePath) {
+
+        DirectoryUtil.createParentDirs(zipFilePath);
+
+        // If we encounter an exception, we'll overwrite the value in the Try
+        Try<Path> fileTry = Try.success(zipFilePath);
+
+        try (var zipOutputStream = new ZipOutputStream(new FileOutputStream(zipFilePath.toFile()))) {
+
+            List<Path> filesToZip = getFilesRecursively(dirToZip);
+
+            for (var file : filesToZip) {
+                if (Files.isRegularFile(file)) {
+                    // This creates the file entry in the zip file but doesn't write any file contents into the zip file
+                    zipOutputStream.putNextEntry(new ZipEntry(file.toString()));
+                    // Add the file contents to the zip file
+                    zipOutputStream.write(Files.readAllBytes(file));
+                } else {
+                    // If the file is a directory (or a symlink to a directory), readAllBytes throws since it can't read bytes from a directory
+                    log.info("Not writing contents of file {} to zip archive since it's not a regular file", file);
+                }
+            }
+
+        } catch (Exception e) {
+            fileTry = Try.failure(e);
+        }
+        return fileTry;
+    }
 
 
     /**
@@ -30,7 +66,7 @@ public enum IOUtil {
     public static Try<String> read(Path filePath) {
         Try<String> contentTry;
         try {
-            contentTry = Try.successful(java.nio.file.Files.readString(filePath, StandardCharsets.UTF_8));
+            contentTry = Try.success(java.nio.file.Files.readString(filePath, StandardCharsets.UTF_8));
         } catch (IOException e) {
             contentTry = Try.failure(e);
         }
@@ -53,7 +89,7 @@ public enum IOUtil {
             pathTry = Try.failure(new NullPointerException("Can't convert null to a path"));
         } else {
             try {
-                pathTry = Try.successful(file.toPath());
+                pathTry = Try.success(file.toPath());
             } catch (InvalidPathException ex) {
                 pathTry = Try.failure(ex);
             }
@@ -74,7 +110,7 @@ public enum IOUtil {
         List<File> parentDirsToCreate = DirectoryUtil.getParentDirsToCreate(file);
 
         // Create the parent directories that don't exist, starting with the one highest up in the file system hierarchy
-        Lists.reverse(parentDirsToCreate).forEach(File::mkdir);
+        parentDirsToCreate.reverse().forEach(File::mkdir);
 
         try {
             boolean wasCreated = file.createNewFile();
@@ -92,5 +128,22 @@ public enum IOUtil {
             canCreateOrIsWritable = false;
         }
         return canCreateOrIsWritable;
+    }
+
+    public static List<Path> getFilesRecursively(Path startDir) {
+        var files = new ArrayList<Path>();
+        try {
+            // Includes symbolic links in the list but doesn't follow them
+            Files.walkFileTree(startDir, new SimpleFileVisitor<>() {
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+                    files.add(file);
+                    return FileVisitResult.CONTINUE;
+                }
+            });
+        } catch (IOException e) {
+            log.warn("Could not walk file tree starting at {}", startDir, e);
+        }
+        return List.ofAll(files);
     }
 }

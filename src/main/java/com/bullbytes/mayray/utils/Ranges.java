@@ -14,6 +14,8 @@ public enum Ranges {
     ;
 
     public static List<Integer> closed(int startInclusive, int endInclusive) {
-        return IntStream.rangeClosed(startInclusive, endInclusive).boxed().collect(toList());
+        return IntStream.rangeClosed(startInclusive, endInclusive)
+                .boxed()
+                .collect(toList());
     }
 }

@@ -1,14 +1,14 @@
 package com.bullbytes.mayray.utils.log;
 
 
-import com.bullbytes.mayray.utils.Lists;
+import io.vavr.collection.List;
+import io.vavr.control.Option;
 
 import java.util.Optional;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
 
-import static java.util.Arrays.asList;
 
 /**
  * Helps with the {@link Logger}s of java.util.logging.
@@ -36,8 +36,8 @@ public enum LogUtil {
      * @return the {@link ConsoleHandler} of the root logger wrapped in a {@link Optional} if the root logger doesn't
      * have a console handler
      */
-    static Optional<Handler> getDefaultConsoleHandler() {
+    static Option<Handler> getDefaultConsoleHandler() {
         var rootLogger = getRootLogger();
-        return Lists.first(asList(rootLogger.getHandlers()));
+        return List.of(rootLogger.getHandlers()).headOption();
     }
 }

@@ -1,4 +1,4 @@
-package com.bullbytes.mayray;
+package com.bullbytes.mayray.utils;
 
 import java.util.Locale;
 

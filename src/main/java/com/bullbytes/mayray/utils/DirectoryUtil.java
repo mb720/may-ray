@@ -1,9 +1,11 @@
 package com.bullbytes.mayray.utils;
 
 
+import io.vavr.collection.List;
+
 import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Helps with file system directories.
@@ -18,13 +20,13 @@ public enum DirectoryUtil {
      * Creates an empty directory. All parent directories are created if they
      * don't exist.
      *
-     * @param dirPath directory path. If it is null, this method returns {@code false}.
+     * @param dir directory path. If it is null, this method returns {@code false}.
      * @return whether a new directory was created (false if there already
      * existed one with the same name)
      */
-    public static boolean makeDir(String dirPath) {
+    public static boolean makeDir(File dir) {
         // Return false if the path was null and whether the directory is new
-        return dirPath != null && new File(dirPath).mkdirs();
+        return dir != null && dir.mkdirs();
     }
 
     /**
@@ -44,9 +46,9 @@ public enum DirectoryUtil {
      * @param file we create the parent directories for this {@link File}
      * @return whether any directories were created
      */
-    public static boolean createParentDirs(File file) {
+    public static boolean createParentDirs(Path file) {
         // Make sure the directories leading to the file exist
-        String containingDir = file.getParent();
+        File containingDir = file.toFile().getParentFile();
         return makeDir(containingDir);
     }
 
@@ -67,6 +69,6 @@ public enum DirectoryUtil {
 
             parent = parent.getParentFile();
         }
-        return parentsToCreate;
+        return List.ofAll(parentsToCreate);
     }
 }

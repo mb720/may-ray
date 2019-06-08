@@ -2,7 +2,7 @@ package com.bullbytes.mayray.utils.log;
 
 
 import com.bullbytes.mayray.utils.DirectoryUtil;
-import com.bullbytes.mayray.utils.IOUtil;
+import com.bullbytes.mayray.utils.FileUtil;
 import com.bullbytes.mayray.utils.ThreadUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -103,7 +103,7 @@ public enum LogConfigurator {
     private static void addFileHandler(String appName, Formatter formatter) {
         Path logFile = getLogFileDestination(appName);
         try {
-            DirectoryUtil.createParentDirs(logFile.toFile());
+            DirectoryUtil.createParentDirs(logFile);
 
             boolean appendMessages = true;
             var fileHandler = new FileHandler(logFile.toString(), appendMessages);
@@ -140,7 +140,7 @@ public enum LogConfigurator {
         Path logFileInCurrentDir = Paths.get(".", LOG_DIR, fileName);
 
         Path logFile;
-        if (IOUtil.canCreateOrIsWritable(logFileInCurrentDir.toFile())) {
+        if (FileUtil.canCreateOrIsWritable(logFileInCurrentDir.toFile())) {
             logFile = logFileInCurrentDir;
         } else {
             Path logInTempDir = Paths.get(DirectoryUtil.getTempDir(), LOG_DIR, fileName);

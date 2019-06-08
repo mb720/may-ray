@@ -39,7 +39,7 @@ public enum LogConfigurator {
      */
     public static void configureLogHandlers(String appName) {
         Formatter formatter = getCustomFormatter();
-        LogUtil.getDefaultConsoleHandler().ifPresentOrElse(
+        LogUtil.getDefaultConsoleHandler().toJavaOptional().ifPresentOrElse(
                 consoleHandler -> {
                     // The console handler will print all levels of messages the log creates
                     consoleHandler.setLevel(Level.ALL);

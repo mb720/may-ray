@@ -7,6 +7,7 @@ import com.bullbytes.mayray.http.HeaderUtil;
 import com.bullbytes.mayray.http.Requests;
 import com.bullbytes.mayray.http.Responses;
 import com.bullbytes.mayray.utils.FileUtil;
+import com.bullbytes.mayray.utils.Strings;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -46,7 +47,7 @@ public enum FileRequestHandlers {
     private static final Logger log = LoggerFactory.getLogger(FileRequestHandlers.class);
 
     static HttpHandler getListFilesHandler() {
-        return HttpHandlers.catching(exchange -> {
+        return HttpHandlers.checked(exchange -> {
 
             var passwordInputName = "passwordInput";
             var queryMap = getQueryMap(exchange.getRequestURI());
@@ -162,8 +163,9 @@ public enum FileRequestHandlers {
 
             // Get password and the directory to zip from the URL
             Try<URL> zipUrlTry = Match(Tuple(queryMap.get(PASSWORD_KEY), queryMap.get(DIR_KEY))).of(
-                    // Got them → Zip the directory and return its URL
+                    // Got them → Zip the directory and return the zip archive's URL
                     Case($Tuple2($Some($()), $Some($())),
+                            // TODO: Avoid creating the zip file if we already have done so and there is a file in the zipFiles directory on disk
                             (password, dirToGet) -> getZipFile(password.get(), Path.of(dirToGet.get()))),
                     Case($(), Try.failure(new RuntimeException(
                             format("Could not get password (key: '%s') and directory (key: '%s') from request URL", PASSWORD_KEY, DIR_KEY))))
@@ -185,8 +187,16 @@ public enum FileRequestHandlers {
         // Place the zipped files in a directory in the current working directory
         var archiveName = format("zipFiles/%s.zip", dirToZip.getFileName());
         return access.isDownloadAllowed() && access.passwordMatches() ?
-                FileUtil.zipAllFiles(access.getNormalizedPathFromRoot(), Path.of(archiveName))
+                FileUtil.zipAllFiles(
+                        access.getNormalizedPathFromRoot(),
+                        Path.of(archiveName),
+                        FileRequestHandlers::stripDownloadDir)
+                        // Convert the path to a URL
                         .mapTry(zipArchive -> zipArchive.toUri().toURL()) :
                 Try.failure(new RuntimeException(format("Not zipping directory %s: Access denied", dirToZip)));
+    }
+
+    private static String stripDownloadDir(String filePath) {
+        return Strings.removeFirst(DirectoryAccess.DOWNLOAD_ROOT_DIR.normalize().toString(), filePath);
     }
 }

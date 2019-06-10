@@ -12,6 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.function.Function;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -25,7 +26,7 @@ public enum FileUtil {
 
     private static final Logger log = LoggerFactory.getLogger(FileUtil.class);
 
-    public static Try<Path> zipAllFiles(Path dirToZip, Path zipFilePath) {
+    public static Try<Path> zipAllFiles(Path dirToZip, Path zipFilePath, Function<String,String> modifyFilePathInZipArchive) {
 
         DirectoryUtil.createParentDirs(zipFilePath);
 
@@ -39,7 +40,7 @@ public enum FileUtil {
             for (var file : filesToZip) {
                 if (Files.isRegularFile(file)) {
                     // This creates the file entry in the zip file but doesn't write any file contents into the zip file
-                    zipOutputStream.putNextEntry(new ZipEntry(file.toString()));
+                    zipOutputStream.putNextEntry(new ZipEntry(modifyFilePathInZipArchive.apply(file.toString())));
                     // Add the file contents to the zip file
                     zipOutputStream.write(Files.readAllBytes(file));
                 } else {

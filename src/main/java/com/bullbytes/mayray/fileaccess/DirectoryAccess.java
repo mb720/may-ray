@@ -9,7 +9,7 @@ import java.nio.file.Paths;
  * Person of contact: Matthias Braun
  */
 public final class DirectoryAccess {
-    private static final String DOWNLOAD_ROOT_DIR = "./downloadable";
+    public static final Path DOWNLOAD_ROOT_DIR = Path.of("./downloadable");
     private final Path desiredDirectory;
     private final String password;
 
@@ -32,8 +32,8 @@ public final class DirectoryAccess {
         Path normalizedPath = getNormalizedPathFromRoot();
         boolean isDirectory = normalizedPath.toFile().isDirectory();
 
-        Path normalizeRootDir = Paths.get(DOWNLOAD_ROOT_DIR).normalize();
-        boolean desiredDirIsSubdirOfRoot = normalizedPath.startsWith(normalizeRootDir);
+        Path normalizedRootDir = DOWNLOAD_ROOT_DIR.normalize();
+        boolean desiredDirIsSubdirOfRoot = normalizedPath.startsWith(normalizedRootDir);
 
         return desiredDirIsSubdirOfRoot && isDirectory;
     }
@@ -44,7 +44,7 @@ public final class DirectoryAccess {
      * @return the path of the desired directory inside the root download directory, normalized (no "..", or ".")
      */
     public Path getNormalizedPathFromRoot() {
-        return Paths.get(DOWNLOAD_ROOT_DIR, desiredDirectory.toString()).normalize();
+        return Paths.get(DOWNLOAD_ROOT_DIR.toString(), desiredDirectory.toString()).normalize();
     }
 
     public Path getDesiredDir() {
@@ -52,9 +52,8 @@ public final class DirectoryAccess {
     }
 
     public boolean passwordMatches() {
-        Path dirPath = getNormalizedPathFromRoot();
-        return MetaFile.readFromDir(dirPath)
-                .map(metaFile -> metaFile.passwordIs(password))
+        return AccessFile.readFromDir(DOWNLOAD_ROOT_DIR)
+                .map(accessFile -> accessFile.passwordIs(password, desiredDirectory))
                 .getOrElse(() -> false);
     }
 

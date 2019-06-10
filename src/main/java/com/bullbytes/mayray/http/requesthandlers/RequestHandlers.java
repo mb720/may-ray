@@ -29,7 +29,7 @@ public enum RequestHandlers {
     }
 
     private static HttpHandler getRootHandler() {
-        return HttpHandlers.catching(exchange -> {
+        return HttpHandlers.checked(exchange -> {
             String rootResponse = "You're at the root now\n";
             switch (Requests.getMethod(exchange)) {
                 case GET:

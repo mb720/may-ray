@@ -7,8 +7,6 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import io.vavr.CheckedConsumer;
 
-import java.util.function.Consumer;
-
 /**
  * Creates {@link HttpHandler}s that catch exceptions when they occur while handling an {@link HttpExchange}.
  * <p>
@@ -18,14 +16,14 @@ enum HttpHandlers {
     ;
 
     /**
-     * Creates an {@link HttpHandler} that sends an {@link Responses#sendError error} if an exception occurs while handling
-     * the {@link HttpExchange}.
+     * Creates an {@link HttpHandler} that sends an {@link Responses#sendError error} if an exception occurs while
+     * handling the {@link HttpExchange}.
      *
-     * @param handleExchange a {@link Consumer} of {@link HttpExchange}. Should this cause an {@link Exception}, we
+     * @param handleExchange a {@link CheckedConsumer} of {@link HttpExchange}. Should this cause an {@link Exception}, we
      *                       catch it and send the response that an internal server error occurred
      * @return an {@link HttpHandler} that catches exceptions
      */
-    public static HttpHandler catching(CheckedConsumer<? super HttpExchange> handleExchange) {
+    public static HttpHandler checked(CheckedConsumer<? super HttpExchange> handleExchange) {
         return exchange -> {
             try {
                 handleExchange.accept(exchange);
@@ -35,9 +33,17 @@ enum HttpHandlers {
         };
     }
 
+    /**
+     * Creates a {@link #checked} {@link HttpHandler} for a specific request {@code method}. For all other
+     * {@link RequestMethod}s the returned {@link HttpHandler} sends {@link Responses#unsupportedMethod} to the client.
+     *
+     * @param method         we create a {@link HttpHandler} for this {@link RequestHandlers}
+     * @param handleExchange defines how the {@link HttpHandler} processes the {@link HttpExchange}
+     * @return a {@link #checked} {@link HttpHandler} for the given request {@code method}
+     */
     public static HttpHandler forMethod(RequestMethod method,
                                         CheckedConsumer<? super HttpExchange> handleExchange) {
-        return catching(exchange -> {
+        return checked(exchange -> {
             if (method == Requests.getMethod(exchange)) {
                 handleExchange.accept(exchange);
             } else {

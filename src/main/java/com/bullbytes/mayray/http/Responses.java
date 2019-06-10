@@ -8,6 +8,7 @@ import j2html.tags.Renderable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
@@ -144,6 +145,9 @@ public enum Responses {
 
             var bytesOfFile = fileStream.readAllBytes();
 
+            var fileName = new File(fileUrl.getPath()).getName();
+            // "attachment" makes browsers display the "save as" dialog
+            exchange.getResponseHeaders().set("Content-Disposition", "attachment; filename=" + fileName);
             exchange.sendResponseHeaders(SUCCESS.getCode(), bytesOfFile.length);
 
             outputStream.write(bytesOfFile);

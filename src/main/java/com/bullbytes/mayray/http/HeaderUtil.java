@@ -12,6 +12,21 @@ import io.vavr.collection.List;
 public enum HeaderUtil {
     ;
 
+    /**
+     * Converts the keys and values in the {@link Headers} to string.
+     *
+     * @param headers we convert these {@link Headers} to string
+     * @return a string representation of the {@code headers}
+     */
+    public static String toString(Headers headers) {
+        var stringBuilder = new StringBuilder();
+
+        headers.forEach((key, value) ->
+                stringBuilder.append(String.format("%s: %s\n", key, value)));
+
+        return stringBuilder.toString();
+    }
+
     public static List<String> getValuesOf(String key, Headers header) {
         // This might be null if the key doesn't exist in the header
         java.util.List<String> values = header.get(key);

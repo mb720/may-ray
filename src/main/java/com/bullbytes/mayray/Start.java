@@ -1,16 +1,17 @@
 package com.bullbytes.mayray;
 
+import com.bullbytes.mayray.config.ServerConfig;
+import com.bullbytes.mayray.config.ServerConfigParser;
+import com.bullbytes.mayray.http.HttpsUtil;
 import com.bullbytes.mayray.http.requesthandlers.RequestHandlers;
 import com.bullbytes.mayray.utils.FormattingUtil;
-import com.bullbytes.mayray.utils.Ports;
-import com.bullbytes.mayray.utils.Ranges;
 import com.bullbytes.mayray.utils.log.LogConfigurator;
 import com.bullbytes.mayray.utils.log.LogUtil;
-import com.sun.net.httpserver.HttpServer;
+import com.sun.net.httpserver.HttpsServer;
+import io.vavr.control.Try;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
@@ -52,42 +53,52 @@ public enum Start {
 
         logRuntimeInfo();
 
-        startServer();
+        ServerConfigParser.fromPropertiesFile(args).fold(
+                messages -> {
+                    messages.forEach(msg -> log.error("Invalid config file: {}", msg));
+                    return false;
+                },
+                (serverConfigAndPath) -> {
+                    var configFilePath = serverConfigAndPath._2.toAbsolutePath().normalize();
+                    log.info("Read configuration from {}", configFilePath);
+                    startServer(serverConfigAndPath._1);
+                    return true;
+                });
     }
 
-    private static void startServer() {
-        var host = "0.0.0.0";
+    private static void startServer(ServerConfig config) {
+        var address = new InetSocketAddress(config.getHost(), config.getPort());
 
-        var portRange = Ranges.closed(8080, 9020);
-        var portMaybe = portRange.stream()
-                .filter(portNr -> Ports.canBind(host, portNr))
-                .findFirst();
-
-        portMaybe.ifPresentOrElse(port -> {
-            var address = new InetSocketAddress(host, port);
-            log.info("Starting server at {}", address);
-            startServer(address);
-
-        }, () -> log.error("Could not find port to bind to in this range: {}", portRange));
-    }
-
-    private static void startServer(InetSocketAddress address) {
-        try {
-            var server = HttpServer.create(address, 0);
-            log.info("Server created");
-            RequestHandlers.addHandlers(server);
+        log.info("Starting server at {}", address);
+        createServer(config).fold(error -> {
+            log.error("Could not create server at address {}", address, error);
+            return false;
+        }, server -> {
             server.start();
-            log.info("Server started");
-        } catch (IOException e) {
-            log.error("Could not create server at address {}", address, e);
-        }
+            log.info("Server started. Listening at {}", address);
+            return true;
+        });
+        // We are done using the passwords → Remove them from memory
+        config.wipePasswords();
+    }
+
+    private static Try<HttpsServer> createServer(ServerConfig config) {
+        var address = new InetSocketAddress(config.getHost(), config.getPort());
+
+        return HttpsUtil.getHttpsConfigurator(config.getKeyStorePath(), config.getKeyStorePassword()).flatMap(
+                httpsConfigurator -> Try.of(() -> {
+                    HttpsServer server = HttpsServer.create(address, 0);
+                    server.setHttpsConfigurator(httpsConfigurator);
+                    RequestHandlers.addHandlers(server);
+                    return server;
+                }));
     }
 
     private static void configureLogging(String appName) {
-        Level logLevel = Level.INFO;
         // Note that we can set the log level on both the logger and the log handlers
+        Level logLevel = Level.ALL;
         LogUtil.getRootLogger().setLevel(logLevel);
-        LogConfigurator.configureLogHandlers(appName);
+        LogConfigurator.configureLogHandlers(appName, logLevel);
 
         log.info("Log level: {}", logLevel);
         Arrays.stream(LogUtil.getRootLogger().getHandlers())

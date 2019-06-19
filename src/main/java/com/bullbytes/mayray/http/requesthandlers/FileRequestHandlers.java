@@ -11,6 +11,7 @@ import com.bullbytes.mayray.utils.Strings;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import io.vavr.API;
 import io.vavr.collection.List;
 import io.vavr.control.Try;
 import j2html.tags.Renderable;
@@ -29,9 +30,7 @@ import java.util.Map;
 
 import static com.bullbytes.mayray.http.RequestMethod.GET;
 import static com.bullbytes.mayray.http.RequestMethod.POST;
-import static io.vavr.API.*;
-import static io.vavr.Patterns.$Some;
-import static io.vavr.Patterns.$Tuple2;
+import static io.vavr.API.Tuple;
 import static java.lang.String.format;
 
 /**
@@ -141,35 +140,19 @@ public enum FileRequestHandlers {
         return reqContent.substring(parameterPrefix.length());
     }
 
-    public static void main(String... args) {
-        log.info("Test started");
-
-        // Question about this:
-        // https://stackoverflow.com/questions/56505036/match-on-options-inside-tuple-with-vavr
-        var input = Tuple(Some(1), Some(2));
-
-        var output = Match(input).of(
-                Case($Tuple2($Some($()), $Some($())),
-                        (fst, snd) -> fst.get() + "/" + snd.get()),
-                Case($(), "No match")
-        );
-        log.info("Result: {}", output);
-    }
-
     static HttpHandler getDownloadHandler() {
         return HttpHandlers.forMethod(GET, exchange -> {
 
             var queryMap = getQueryMap(exchange.getRequestURI());
 
             // Get password and the directory to zip from the URL
-            Try<URL> zipUrlTry = Match(Tuple(queryMap.get(PASSWORD_KEY), queryMap.get(DIR_KEY))).of(
-                    // Got them → Zip the directory and return the zip archive's URL
-                    Case($Tuple2($Some($()), $Some($())),
-                            // TODO: Avoid creating the zip file if we already have done so and there is a file in the zipFiles directory on disk
-                            (password, dirToGet) -> getZipFile(password.get(), Path.of(dirToGet.get()))),
-                    Case($(), Try.failure(new RuntimeException(
-                            format("Could not get password (key: '%s') and directory (key: '%s') from request URL", PASSWORD_KEY, DIR_KEY))))
-            );
+            Try<URL> zipUrlTry = Tuple(queryMap.get(PASSWORD_KEY), queryMap.get(DIR_KEY).map(Path::of))
+                    // Get at the two Options if they are both present
+                    .apply(API::For)
+                    // TODO: Avoid creating the zip file if we already have done so and there is a file in the zipFiles directory on disk
+                    .yield(FileRequestHandlers::getZipFile)
+                    .getOrElse(Try.failure(new RuntimeException(
+                            format("Could not get password (key: '%s') and directory (key: '%s') from request URL", PASSWORD_KEY, DIR_KEY))));
 
             zipUrlTry.fold(error -> {
                 Responses.sendError("Could not zip directory", error, exchange);

@@ -35,14 +35,14 @@ public enum LogConfigurator {
      * Configures the format used by the default {@link ConsoleHandler} and adds a {@link FileHandler} that logs to
      * a local file.
      *
-     * @param appName the name of the app, used in the log file name
+     * @param appName  the name of the app, used in the log file name
+     * @param logLevel the handlers will process the messages of this log level or above that the log creates
      */
-    public static void configureLogHandlers(String appName) {
+    public static void configureLogHandlers(String appName, Level logLevel) {
         Formatter formatter = getCustomFormatter();
         LogUtil.getDefaultConsoleHandler().toJavaOptional().ifPresentOrElse(
                 consoleHandler -> {
-                    // The console handler will print all levels of messages the log creates
-                    consoleHandler.setLevel(Level.ALL);
+                    consoleHandler.setLevel(logLevel);
                     consoleHandler.setFormatter(formatter);
                 },
                 () -> System.err.println("Could not get default ConsoleHandler"));

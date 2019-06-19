@@ -14,7 +14,11 @@ public final class FailMessage {
         this.message = message;
     }
 
-    static FailMessage formatted(String formatString, Object... formatArgs) {
+    public static FailMessage create(String message) {
+        return new FailMessage(message);
+    }
+
+    public static FailMessage formatted(String formatString, Object... formatArgs) {
         return new FailMessage(format(formatString, formatArgs));
     }
 

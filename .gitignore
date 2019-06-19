@@ -17,3 +17,6 @@ metrics.json
 plot.htm
 results.bin
 zipFiles/
+
+/config
+/tls

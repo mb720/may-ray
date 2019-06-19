@@ -7,11 +7,10 @@ package com.bullbytes.mayray.http.headers;
  * <p>
  * Person of contact: Matthias Braun
  *
- * @link https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Disposition
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Disposition">Content-Disposition header</a>
  */
 public enum InlineOrAttachment {
     INLINE("inline"), ATTACHMENT("attachment");
-
 
     private final String headerString;
 

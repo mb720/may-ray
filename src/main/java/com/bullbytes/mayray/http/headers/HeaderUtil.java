@@ -1,4 +1,4 @@
-package com.bullbytes.mayray.http;
+package com.bullbytes.mayray.http.headers;
 
 import com.sun.net.httpserver.Headers;
 import io.vavr.collection.List;

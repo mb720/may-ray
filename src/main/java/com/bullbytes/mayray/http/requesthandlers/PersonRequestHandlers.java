@@ -10,6 +10,7 @@ import java.net.URL;
 import static com.bullbytes.mayray.http.RequestMethod.GET;
 import static com.bullbytes.mayray.http.StatusCode.NOT_FOUND;
 import static com.bullbytes.mayray.http.StatusCode.SUCCESS;
+import static com.bullbytes.mayray.http.headers.InlineOrAttachment.INLINE;
 import static java.lang.String.format;
 
 /**
@@ -75,7 +76,7 @@ enum PersonRequestHandlers {
                 Responses.sendPlainText(SUCCESS, INFO_ABOUT_PERSON_RESOURCES, exchange);
                 break;
             case IMG:
-                Responses.sendFile(imgUrl, ContentType.JPEG, exchange);
+                Responses.sendFile(imgUrl, ContentType.JPEG, INLINE, exchange);
                 break;
             case QUOTE:
                 Responses.sendPlainText(SUCCESS, quote, exchange);

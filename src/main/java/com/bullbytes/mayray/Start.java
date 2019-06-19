@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.management.ManagementFactory;
 import java.net.InetSocketAddress;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.logging.Level;
 
@@ -70,7 +71,10 @@ public enum Start {
         var address = new InetSocketAddress(config.getHost(), config.getPort());
 
         log.info("Starting server at {}", address);
-        createServer(config).fold(error -> {
+
+        var serverTry = createServer(address, config.getKeyStorePath(), config.getKeyStorePassword());
+
+        serverTry.fold(error -> {
             log.error("Could not create server at address {}", address, error);
             return false;
         }, server -> {
@@ -82,15 +86,15 @@ public enum Start {
         config.wipePasswords();
     }
 
-    private static Try<HttpsServer> createServer(ServerConfig config) {
-        var address = new InetSocketAddress(config.getHost(), config.getPort());
+    private static Try<HttpsServer> createServer(InetSocketAddress address,
+                                                 Path keyStorePath,
+                                                 char[] keyStorePassword) {
 
-        return HttpsUtil.getHttpsConfigurator(config.getKeyStorePath(), config.getKeyStorePassword()).flatMap(
+        return HttpsUtil.getHttpsConfigurator(keyStorePath, keyStorePassword).flatMap(
                 httpsConfigurator -> Try.of(() -> {
                     HttpsServer server = HttpsServer.create(address, 0);
                     server.setHttpsConfigurator(httpsConfigurator);
-                    RequestHandlers.addHandlers(server);
-                    return server;
+                    return RequestHandlers.addHandlers(server);
                 }));
     }
 

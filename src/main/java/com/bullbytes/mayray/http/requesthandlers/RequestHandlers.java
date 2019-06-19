@@ -1,12 +1,13 @@
 package com.bullbytes.mayray.http.requesthandlers;
 
-import com.bullbytes.mayray.http.HeaderUtil;
 import com.bullbytes.mayray.http.Requests;
 import com.bullbytes.mayray.http.Responses;
+import com.bullbytes.mayray.http.headers.HeaderUtil;
 import com.bullbytes.mayray.utils.TypeUtil;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import com.sun.net.httpserver.HttpsExchange;
+import com.sun.net.httpserver.HttpsServer;
 import io.vavr.collection.List;
 import io.vavr.collection.Stream;
 import org.slf4j.Logger;
@@ -29,7 +30,14 @@ public enum RequestHandlers {
 
     private static final Logger log = LoggerFactory.getLogger(RequestHandlers.class);
 
-    public static void addHandlers(HttpServer server) {
+    /**
+     * Adds {@link HttpHandler} to a {@link HttpServer} so it can process HTTP requests.
+     *
+     * @param server the {@link HttpServer} to which we add {@link HttpHandler}s
+     * @param <T>    the type of server. Used so we can return subtypes of {@link HttpServer}, such as {@link HttpsServer}
+     * @return the server with added {@link HttpHandler}s
+     */
+    public static <T extends HttpServer> T addHandlers(T server) {
         server.createContext("/", getRootHandler());
         server.createContext("/spj", PersonRequestHandlers.getSimonPeytonJonesHandler());
         server.createContext("/ada", PersonRequestHandlers.getAdaHandler());
@@ -37,6 +45,7 @@ public enum RequestHandlers {
         server.createContext("/grace", PersonRequestHandlers.getGraceHopperHandler());
         server.createContext("/get", FileRequestHandlers.getDownloadHandler());
         server.createContext("/list", FileRequestHandlers.getListFilesHandler());
+        return server;
     }
 
     private static HttpHandler getRootHandler() {

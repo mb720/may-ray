@@ -1,5 +1,6 @@
 package com.bullbytes.mayray.http;
 
+import com.bullbytes.mayray.http.headers.InlineOrAttachment;
 import com.sun.net.httpserver.HttpExchange;
 import io.vavr.CheckedConsumer;
 import io.vavr.Value;
@@ -17,6 +18,7 @@ import java.util.stream.Collectors;
 
 import static com.bullbytes.mayray.http.StatusCode.METHOD_NOT_ALLOWED;
 import static com.bullbytes.mayray.http.StatusCode.SUCCESS;
+import static java.lang.String.format;
 
 /**
  * Responds to HTTP requests.
@@ -133,7 +135,7 @@ public enum Responses {
         }
     }
 
-    public static void sendFile(URL fileUrl, ContentType type, HttpExchange exchange) {
+    public static void sendFile(URL fileUrl, ContentType type, InlineOrAttachment inlineOrAttachment, HttpExchange exchange) {
 
         try (var outputStream = exchange.getResponseBody();
              var fileStream = fileUrl.openStream()) {
@@ -146,8 +148,9 @@ public enum Responses {
             var bytesOfFile = fileStream.readAllBytes();
 
             var fileName = new File(fileUrl.getPath()).getName();
+
             // "attachment" makes browsers display the "save as" dialog
-            exchange.getResponseHeaders().set("Content-Disposition", "attachment; filename=" + fileName);
+            exchange.getResponseHeaders().set("Content-Disposition", format("%s; filename=%s", inlineOrAttachment, fileName));
             exchange.sendResponseHeaders(SUCCESS.getCode(), bytesOfFile.length);
 
             outputStream.write(bytesOfFile);

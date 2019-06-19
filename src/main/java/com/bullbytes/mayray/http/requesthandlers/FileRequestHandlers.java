@@ -3,9 +3,9 @@ package com.bullbytes.mayray.http.requesthandlers;
 import com.bullbytes.mayray.fileaccess.DirectoryAccess;
 import com.bullbytes.mayray.html.Pages;
 import com.bullbytes.mayray.http.ContentType;
-import com.bullbytes.mayray.http.HeaderUtil;
 import com.bullbytes.mayray.http.Requests;
 import com.bullbytes.mayray.http.Responses;
+import com.bullbytes.mayray.http.headers.HeaderUtil;
 import com.bullbytes.mayray.utils.FileUtil;
 import com.bullbytes.mayray.utils.Strings;
 import com.sun.net.httpserver.Headers;
@@ -30,6 +30,7 @@ import java.util.Map;
 
 import static com.bullbytes.mayray.http.RequestMethod.GET;
 import static com.bullbytes.mayray.http.RequestMethod.POST;
+import static com.bullbytes.mayray.http.headers.InlineOrAttachment.ATTACHMENT;
 import static io.vavr.API.Tuple;
 import static java.lang.String.format;
 
@@ -158,7 +159,7 @@ public enum FileRequestHandlers {
                 Responses.sendError("Could not zip directory", error, exchange);
                 return false;
             }, zipUrl -> {
-                Responses.sendFile(zipUrl, ContentType.ZIP, exchange);
+                Responses.sendFile(zipUrl, ContentType.ZIP, ATTACHMENT, exchange);
                 return true;
             });
         });

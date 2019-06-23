@@ -34,7 +34,7 @@ public enum Start {
         log.info("Java classpath: {}", System.getProperty("java.class.path"));
         log.info("JVM arguments and system properties: {}", ManagementFactory.getRuntimeMXBean().getInputArguments());
         log.info("Maximum heap space: {}", FormattingUtil.humanReadableBytes(Runtime.getRuntime().maxMemory()));
-        log.info("Process id: {}", ProcessHandle.current().pid());
+        log.info("Process ID: {}", ProcessHandle.current().pid());
         log.info("User name: {}", System.getProperty("user.name"));
         log.info("User's current working directory: {}", System.getProperty("user.dir"));
 
@@ -100,7 +100,7 @@ public enum Start {
 
     private static void configureLogging(String appName) {
         // Note that we can set the log level on both the logger and the log handlers
-        Level logLevel = Level.ALL;
+        Level logLevel = Level.INFO;
         LogUtil.getRootLogger().setLevel(logLevel);
         LogConfigurator.configureLogHandlers(appName, logLevel);
 

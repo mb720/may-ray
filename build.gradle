@@ -20,11 +20,14 @@ sourceCompatibility = 11
 // Here's more on defining options: https://docs.oracle.com/javase/8/docs/technotes/tools/unix/java.html
 applicationDefaultJvmArgs +=
         [
-        // Set the maximum Java heap size. Note that not all of that space is necessarily available to our
-        // application's objects. The VM, especially the garbage collector, might use some of it, too.
-        // See: http://hg.openjdk.java.net/jdk9/jdk9/hotspot/file/6dc8db7164d2/src/share/vm/gc_interface/collectedHeap.hpp#l234
-        "-Xmx2g"
-]
+                // Set the maximum Java heap size. Note that not all of that space is necessarily available to our
+                // application's objects. The VM, especially the garbage collector, might use some of it, too.
+                // See: http://hg.openjdk.java.net/jdk9/jdk9/hotspot/file/6dc8db7164d2/src/share/vm/gc_interface/collectedHeap.hpp#l234
+                "-Xmx2g",
+                // Workaround for infinite loop caused by JDK bug implementing TLS:
+                // https://stackoverflow.com/questions/56708300/httpsserver-causes-100-cpu-load-with-curl
+                "-Djdk.tls.acknowledgeCloseNotify=true"
+        ]
 
 
 repositories {
@@ -40,7 +43,7 @@ dependencies {
     // Allows for more functional programming by providing, for example, Either, Try, and new collections (List, Map):
     // https://mvnrepository.com/artifact/io.vavr/vavr
     compile 'io.vavr:vavr:0.10.0'
-    
+
     // Creates HTML:
     // https://github.com/tipsy/j2html
     // https://mvnrepository.com/artifact/com.j2html/j2html

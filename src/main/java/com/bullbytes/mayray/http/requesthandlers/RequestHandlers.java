@@ -88,7 +88,8 @@ public enum RequestHandlers {
             return false;
         }, unixBean -> {
 
-            log.info("ID of Java process: {}", ProcessHandle.current().pid());
+            logProcessInfo();
+
             log.info("OS architecture: '{}', version: {}", unixBean.getArch(), unixBean.getVersion());
             log.info("Open file descriptors: {} (max: {})", unixBean.getOpenFileDescriptorCount(), unixBean.getMaxFileDescriptorCount());
 
@@ -103,9 +104,24 @@ public enum RequestHandlers {
 
             logCurrentSockets();
 
+
             return true;
         });
 
+    }
+
+    private static void logProcessInfo() {
+
+        ProcessHandle javaProc = ProcessHandle.current();
+        log.info("ID of Java process: {}", javaProc.pid());
+        javaProc.info().commandLine().ifPresentOrElse(
+                cmd -> log.info("Executable path name of Java process and arguments: {}", cmd),
+                () -> log.warn("Could not get executable path name and arguments of Java process"));
+
+        javaProc.info().startInstant().ifPresentOrElse(
+                startInstant -> log.info("Java process start time: {}", startInstant),
+                () -> log.warn("Could not get start time of process"));
+        
     }
 
     private static void logCurrentSockets() {

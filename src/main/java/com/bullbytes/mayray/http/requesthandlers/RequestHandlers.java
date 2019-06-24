@@ -87,35 +87,19 @@ public enum RequestHandlers {
             log.warn(message.toString());
             return false;
         }, unixBean -> {
-            long javaProcessId = ProcessHandle.current().pid();
 
-            long openFileDescriptors = unixBean.getOpenFileDescriptorCount();
-            long maxFileDescriptors = unixBean.getMaxFileDescriptorCount();
+            log.info("ID of Java process: {}", ProcessHandle.current().pid());
+            log.info("OS architecture: '{}', version: {}", unixBean.getArch(), unixBean.getVersion());
+            log.info("Open file descriptors: {} (max: {})", unixBean.getOpenFileDescriptorCount(), unixBean.getMaxFileDescriptorCount());
 
-            int availableProcessors = unixBean.getAvailableProcessors();
-            double sysLoadAverage = unixBean.getSystemLoadAverage();
-            double recentCpuJvmLoad = unixBean.getProcessCpuLoad();
-            double recentCpuSysLoad = unixBean.getSystemCpuLoad();
-            long processCpuTime = unixBean.getProcessCpuTime();
+            log.info("Available processors: {}", unixBean.getAvailableProcessors());
+            log.info("Last minute's system load average (runnable entities queued and ran): {}", unixBean.getSystemLoadAverage());
+            log.info("Recent JVM CPU load: {}", unixBean.getProcessCpuLoad());
+            log.info("Recent system CPU load: {}", unixBean.getSystemCpuLoad());
 
-            String osArchitecture = unixBean.getArch();
-            String osVersion = unixBean.getVersion();
-
-            long committedVirtualMemorySize = unixBean.getCommittedVirtualMemorySize();
-            long freePhysicalMemorySize = unixBean.getFreePhysicalMemorySize();
-            long freeSwapSpaceSize = unixBean.getFreeSwapSpaceSize();
-
-            log.info("OS architecture: '{}', version: {}", osArchitecture, osVersion);
-            log.info("Open file descriptors of Java process {}: {} (max: {})", javaProcessId, openFileDescriptors, maxFileDescriptors);
-
-            log.info("Available processors: {}\nLast minute's system load average (runnable entities queued and ran): {}", availableProcessors, sysLoadAverage);
-            log.info("Recent JVM CPU load: {}", recentCpuJvmLoad);
-            log.info("Recent system CPU load: {}", recentCpuSysLoad);
-            log.info("JVM process CPU time in nanoseconds: {}", processCpuTime);
-
-            log.info("Memory guaranteed to be available for JVM process: {}", FormattingUtil.humanReadableBytes(committedVirtualMemorySize));
-            log.info("Free physical memory (does not included cached memory): {}", FormattingUtil.humanReadableBytes(freePhysicalMemorySize));
-            log.info("Free swap space: {}", FormattingUtil.humanReadableBytes(freeSwapSpaceSize));
+            log.info("Memory guaranteed to be available for JVM process: {}", FormattingUtil.humanReadableBytes(unixBean.getCommittedVirtualMemorySize()));
+            log.info("Free physical memory (does not include cached memory): {}", FormattingUtil.humanReadableBytes(unixBean.getFreePhysicalMemorySize()));
+            log.info("Free swap space: {}", FormattingUtil.humanReadableBytes(unixBean.getFreeSwapSpaceSize()));
 
             logCurrentSockets();
 
@@ -138,7 +122,7 @@ public enum RequestHandlers {
                     log.warn("Error executing command '{}'", String.join(" ", commandArray), error);
                     return false;
                 }, result -> {
-                    log.info("Current network connections:\n{}", result);
+                    log.info("Current sockets:\n{}", result);
                     return true;
                 });
     }

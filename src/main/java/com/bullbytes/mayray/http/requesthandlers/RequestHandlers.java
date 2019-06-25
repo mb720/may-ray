@@ -121,7 +121,7 @@ public enum RequestHandlers {
         javaProc.info().startInstant().ifPresentOrElse(
                 startInstant -> log.info("Java process start time: {}", startInstant),
                 () -> log.warn("Could not get start time of process"));
-        
+
     }
 
     private static void logCurrentSockets() {

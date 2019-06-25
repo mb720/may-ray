@@ -16,6 +16,7 @@ import java.lang.management.ManagementFactory;
 import java.net.InetSocketAddress;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 
 /**
@@ -93,6 +94,7 @@ public enum Start {
         return HttpsUtil.getHttpsConfigurator(keyStorePath, keyStorePassword).flatMap(
                 httpsConfigurator -> Try.of(() -> {
                     HttpsServer server = HttpsServer.create(address, 0);
+                    server.setExecutor(Executors.newCachedThreadPool());
                     server.setHttpsConfigurator(httpsConfigurator);
                     return RequestHandlers.addHandlers(server);
                 }));

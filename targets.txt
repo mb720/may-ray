@@ -1,8 +1,8 @@
-GET http://localhost:8080/
-GET http://localhost:8080/ada/quote
-GET http://localhost:8080/spj/quote
-GET http://localhost:8080/linus/role
-GET http://localhost:8080/linus/img.jpg
-GET http://localhost:8080/ada/img.jpg
-GET http://localhost:8080/grace/img.jpg
-GET http://localhost:8080/spj/img.jpg
+GET https://localhost:8443/
+GET https://localhost:8443/ada/quote
+GET https://localhost:8443/spj/quote
+GET https://localhost:8443/linus/role
+GET https://localhost:8443/linus/img.jpg
+GET https://localhost:8443/ada/img.jpg
+GET https://localhost:8443/grace/img.jpg
+GET https://localhost:8443/spj/img.jpg

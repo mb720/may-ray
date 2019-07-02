@@ -47,7 +47,7 @@ public enum LogConfigurator {
                 },
                 () -> System.err.println("Could not get default ConsoleHandler"));
 
-        addFileHandler(appName, formatter);
+        addFileHandler(appName, formatter, logLevel);
     }
 
     private static Formatter getCustomFormatter() {
@@ -100,7 +100,7 @@ public enum LogConfigurator {
         return throwableAsString;
     }
 
-    private static void addFileHandler(String appName, Formatter formatter) {
+    private static void addFileHandler(String appName, Formatter formatter, Level logLevel) {
         Path logFile = getLogFileDestination(appName);
         try {
             DirectoryUtil.createParentDirs(logFile);
@@ -108,8 +108,8 @@ public enum LogConfigurator {
             boolean appendMessages = true;
             var fileHandler = new FileHandler(logFile.toString(), appendMessages);
             fileHandler.setFormatter(formatter);
-            // The file handler will write all levels of messages the log creates
-            fileHandler.setLevel(Level.ALL);
+            // The file handler will write messages that the log creates if they are of this level or above
+            fileHandler.setLevel(logLevel);
             fileHandler.setEncoding(StandardCharsets.UTF_8.displayName(Locale.ROOT));
 
             LogUtil.getRootLogger().addHandler(fileHandler);

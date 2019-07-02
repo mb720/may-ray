@@ -1,10 +1,16 @@
 package com.bullbytes.mayray.utils;
 
+import com.sun.management.UnixOperatingSystemMXBean;
 import io.vavr.control.Try;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.management.ManagementFactory;
 import java.nio.charset.StandardCharsets;
+
+import static java.lang.String.format;
 
 /**
  * Interacts with the underlying operating system.
@@ -13,6 +19,8 @@ import java.nio.charset.StandardCharsets;
  */
 public enum SysUtil {
     ;
+
+    public static final Logger log = LoggerFactory.getLogger(SysUtil.class);
 
     /**
      * Calls an executable and returns its output. This includes error messages.
@@ -42,5 +50,70 @@ public enum SysUtil {
 
     private static String toString(InputStream stream) throws IOException {
         return new String(stream.readAllBytes(), StandardCharsets.UTF_8);
+    }
+
+    /**
+     * Logs information about the system such as the number of free RAM, open file descriptors, currently used sockets,
+     * CPU load, etc.
+     */
+    public static void logSystemStats() {
+
+        TypeUtil.castTo(UnixOperatingSystemMXBean.class, ManagementFactory.getOperatingSystemMXBean()).fold(message -> {
+            log.warn(message.toString());
+            return false;
+        }, unixBean -> {
+
+            logProcessInfo();
+
+            log.info("OS architecture: '{}', version: {}", unixBean.getArch(), unixBean.getVersion());
+            log.info("Open file descriptors: {} (max: {})", unixBean.getOpenFileDescriptorCount(), unixBean.getMaxFileDescriptorCount());
+
+            log.info("Available processors: {}", unixBean.getAvailableProcessors());
+            log.info("Last minute's system load average (runnable entities queued and ran): {}", unixBean.getSystemLoadAverage());
+            log.info("Recent JVM CPU load: {}", unixBean.getProcessCpuLoad());
+            log.info("Recent system CPU load: {}", unixBean.getSystemCpuLoad());
+
+            log.info("Memory guaranteed to be available for JVM process: {}", FormattingUtil.humanReadableBytes(unixBean.getCommittedVirtualMemorySize()));
+            log.info("Free physical memory (does not include cached memory): {}", FormattingUtil.humanReadableBytes(unixBean.getFreePhysicalMemorySize()));
+            log.info("Free swap space: {}", FormattingUtil.humanReadableBytes(unixBean.getFreeSwapSpaceSize()));
+
+            logCurrentSockets();
+
+            return true;
+        });
+
+    }
+
+    private static void logProcessInfo() {
+
+        ProcessHandle javaProc = ProcessHandle.current();
+        log.info("ID of Java process: {}", javaProc.pid());
+        javaProc.info().commandLine().ifPresentOrElse(
+                cmd -> log.info("Executable path name of Java process and arguments: {}", cmd),
+                () -> log.warn("Could not get executable path name and arguments of Java process"));
+
+        javaProc.info().startInstant().ifPresentOrElse(
+                startInstant -> log.info("Java process start time: {}", startInstant),
+                () -> log.warn("Could not get start time of process"));
+
+    }
+
+    private static void logCurrentSockets() {
+        String javaProcessId = String.valueOf(ProcessHandle.current().pid());
+        var bash = "/usr/bin/bash";
+
+        var commandOption = "-c";
+        var ssAndGrep = format("ss -nap | grep %s", javaProcessId);
+
+        String[] commandArray = {bash, commandOption, ssAndGrep};
+
+        call(commandArray)
+                .fold(error -> {
+                    log.warn("Error executing command '{}'", String.join(" ", commandArray), error);
+                    return false;
+                }, result -> {
+                    log.info("Current sockets:\n{}", result);
+                    return true;
+                });
     }
 }

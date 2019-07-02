@@ -1,37 +1,28 @@
 package com.bullbytes.mayray.http.headers;
 
-import com.sun.net.httpserver.Headers;
-import io.vavr.collection.List;
-
+import com.bullbytes.mayray.utils.FailMessage;
+import com.bullbytes.mayray.utils.ParseUtil;
+import com.bullbytes.mayray.utils.Strings;
+import io.vavr.collection.Map;
+import io.vavr.control.Either;
+import io.vavr.control.Option;
 
 /**
- * Helps with HTTP {@link Headers}.
+ * Helps with HTTP headers.
  * <p>
  * Person of contact: Matthias Braun
  */
 public enum HeaderUtil {
     ;
 
-    /**
-     * Converts the keys and values in the {@link Headers} to string.
-     *
-     * @param headers we convert these {@link Headers} to string
-     * @return a string representation of the {@code headers}
-     */
-    public static String toString(Headers headers) {
-        var stringBuilder = new StringBuilder();
-
-        headers.forEach((key, value) ->
-                stringBuilder.append(String.format("%s: %s\n", key, value)));
-
-        return stringBuilder.toString();
+    public static Option<String> getValueOf(HttpHeader header, Map<String, String> headers) {
+        var mapWitUpperCaseKeys = headers.mapKeys(Strings::stripAndUpperCase);
+        return mapWitUpperCaseKeys.get(Strings.stripAndUpperCase(header.toString()));
     }
 
-    public static List<String> getValuesOf(String key, Headers header) {
-        // This might be null if the key doesn't exist in the header
-        java.util.List<String> values = header.get(key);
-        return values == null ?
-                List.empty() :
-                List.ofAll(values);
+    public static Either<FailMessage, Integer> getContentLength(Map<String, String> headers) {
+        return getValueOf(HttpHeader.CONTENT_LENGTH, headers)
+                .map(ParseUtil::parseInt)
+                .getOrElse(() -> Either.left(FailMessage.create("Did not find Content-Length header among headers")));
     }
 }

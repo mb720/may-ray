@@ -1,12 +1,8 @@
 package com.bullbytes.mayray.fileaccess;
 
-import com.bullbytes.mayray.utils.FailMessage;
-import com.bullbytes.mayray.utils.Strings;
-import io.vavr.Tuple2;
+import com.bullbytes.mayray.utils.ParseUtil;
 import io.vavr.collection.List;
 import io.vavr.collection.Map;
-import io.vavr.control.Either;
-import io.vavr.control.Option;
 import io.vavr.control.Try;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +11,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.function.Function;
 
 /**
  * An {@link AccessFile} is a file containing information about accessing directories on the server. For
@@ -38,20 +33,12 @@ final class AccessFile {
     }
 
     private static Map<Path, String> parseToMap(List<String> lines) {
-        List<Either<FailMessage, Tuple2<String, String>>> errorMsgsAndTuples =
-                lines.map(l -> Strings.splitAtFirst("=", l));
-
-        return errorMsgsAndTuples
-                .flatMap(either -> either.fold(msg -> {
-                    log.warn(msg.toString());
-                    return Option.none();
-                }, tuple ->
-                        // Remove leading and trailing whitespace
-                        Option.of(tuple.map((path, password)
-                                // We normalize the path from the file (and later the path provided in #passwordIs) to
-                                // treat paths of different representations ("the_dir" and "./the_dir") as the same
-                                -> new Tuple2<>(Path.of(path.strip()).normalize(), password.strip())))))
-                .toMap(Function.identity());
+        return ParseUtil.getKeyValueMap(lines, "=",
+                // We normalize the path of the file (and later the path provided in #passwordIs) to
+                // treat paths of different representations ("the_dir" and "./the_dir") as the same
+                path -> Path.of(path.strip()).normalize(),
+                String::strip,
+                msg -> log.warn(msg.toString()));
     }
 
     /**

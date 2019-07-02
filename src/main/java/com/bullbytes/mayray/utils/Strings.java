@@ -2,6 +2,9 @@ package com.bullbytes.mayray.utils;
 
 import io.vavr.Tuple2;
 import io.vavr.control.Either;
+import io.vavr.control.Option;
+
+import java.util.Locale;
 
 /**
  * Helps with searching and manipulating strings.
@@ -11,12 +14,17 @@ import io.vavr.control.Either;
 public enum Strings {
     ;
 
-    public static String removeFirst(String stringToRemove, String original) {
+    public static String getStringAfter(String stringToRemove, String original) {
         // If the original contains the string to remove, get the part after the string to remove. Otherwise, get
         // the original string
         return splitAtFirst(stringToRemove, original)
                 .fold(failMessage -> original, Tuple2::_2);
     }
+
+    public static String stripAndUpperCase(String s){
+        return s.strip().toUpperCase(Locale.ROOT);
+    }
+
 
     public static Either<FailMessage, Tuple2<String, String>> splitAtFirst(String splitter, String original) {
 

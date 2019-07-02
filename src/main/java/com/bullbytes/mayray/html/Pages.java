@@ -2,7 +2,7 @@ package com.bullbytes.mayray.html;
 
 import com.bullbytes.mayray.fileaccess.DirectoryAccess;
 import com.bullbytes.mayray.utils.FormattingUtil;
-import com.bullbytes.mayray.http.requesthandlers.FileRequestHandlers;
+import com.bullbytes.mayray.http.responses.FileResponses;
 import com.bullbytes.mayray.utils.FileUtil;
 import j2html.tags.ContainerTag;
 import j2html.tags.EmptyTag;
@@ -76,8 +76,8 @@ public enum Pages {
 
             var fileList = ul(each(filesInDir, f -> li(trimDownloadRootDir(f) + " " + getSize(f))));
 
-            var dirKey = FileRequestHandlers.DIR_KEY;
-            var passKey = FileRequestHandlers.PASSWORD_KEY;
+            var dirKey = FileResponses.DIR_KEY;
+            var passKey = FileResponses.PASSWORD_KEY;
             var downloadLink = p(a("Download files")
                     .withHref(format("get?%s=%s&%s=%s",
                             dirKey,
@@ -119,6 +119,13 @@ public enum Pages {
         return withHead("Can't download directory", body(
                 h2(format("Can't download files from directory '%s'", dirToGet)),
                 p("Maybe the directory does not exist.")
+        ));
+    }
+
+    public static Renderable couldNotGetPasswordFromBody(String passwordKey) {
+        return withHead("Couldn't get password from body", body(
+                h2("Something went wrong"),
+                p(format("Couldn't get password from body. It should be something like '%s=directoryPassword'", passwordKey))
         ));
     }
 }

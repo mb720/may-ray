@@ -1,8 +1,9 @@
 GET https://localhost:8443/
-GET https://localhost:8443/ada/quote
-GET https://localhost:8443/spj/quote
-GET https://localhost:8443/linus/role
-GET https://localhost:8443/linus/img.jpg
-GET https://localhost:8443/ada/img.jpg
-GET https://localhost:8443/grace/img.jpg
-GET https://localhost:8443/spj/img.jpg
+
+# GET https://localhost:8443/ada/quote
+# GET https://localhost:8443/spj/quote
+# GET https://localhost:8443/linus/role
+# GET https://localhost:8443/linus/img.jpg
+# GET https://localhost:8443/ada/img.jpg
+# GET https://localhost:8443/grace/img.jpg
+# GET https://localhost:8443/spj/img.jpg

@@ -8,8 +8,10 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.*;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.function.Function;
@@ -26,7 +28,19 @@ public enum FileUtil {
 
     private static final Logger log = LoggerFactory.getLogger(FileUtil.class);
 
-    public static Try<Path> zipAllFiles(Path dirToZip, Path zipFilePath, Function<String,String> modifyFilePathInZipArchive) {
+    /**
+     * Zips all regular files in a {@code dirToZip} and returns the {@link Path} of the created zip archive.
+     *
+     * @param dirToZip                   we zip all {@link Files#isRegularFile regular} files in this directory
+     * @param zipFilePath                the location where we create the zip archive containing the file of the
+     *                                   {@code dirToZip}
+     * @param modifyFilePathInZipArchive transforms the file path of a zipped file as it appears in the resulting zip
+     *                                   file
+     * @return the {@link Path} of the created zip archive wrapped in a {@link Try} in case zipping failed
+     */
+    public static Try<Path> zipAllFiles(Path dirToZip,
+                                        Path zipFilePath,
+                                        Function<String, String> modifyFilePathInZipArchive) {
 
         DirectoryUtil.createParentDirs(zipFilePath);
 
@@ -53,49 +67,6 @@ public enum FileUtil {
             fileTry = Try.failure(e);
         }
         return fileTry;
-    }
-
-
-    /**
-     * Reads a {@code file} and returns its contents as a string.
-     * <p>
-     * The encoding used is {@link StandardCharsets#UTF_8 UTF-8}.
-     *
-     * @param filePath {@link Path} to read
-     * @return the contents of the file or a failed {@link Try} if the {@code file} could not be read
-     */
-    public static Try<String> read(Path filePath) {
-        Try<String> contentTry;
-        try {
-            contentTry = Try.success(java.nio.file.Files.readString(filePath, StandardCharsets.UTF_8));
-        } catch (IOException e) {
-            contentTry = Try.failure(e);
-        }
-        return contentTry;
-    }
-
-    /**
-     * Converts a {@code file} to a {@link Path}. If that conversion would throw an {@link InvalidPathException}, we
-     * return that exception inside a {@link Try}.
-     * <p>
-     * Such {@link InvalidPathException}s happen when the {@code file} contains characters that are considered illegal
-     * by the operating system.
-     *
-     * @param file we convert this {@code File} to a {@link Path}
-     * @return the {@link Path} created from the {@code file} wrapped in a {@link Try} in case the conversion failed
-     */
-    public static Try<Path> toPath(File file) {
-        Try<Path> pathTry;
-        if (file == null) {
-            pathTry = Try.failure(new NullPointerException("Can't convert null to a path"));
-        } else {
-            try {
-                pathTry = Try.success(file.toPath());
-            } catch (InvalidPathException ex) {
-                pathTry = Try.failure(ex);
-            }
-        }
-        return pathTry;
     }
 
     /**

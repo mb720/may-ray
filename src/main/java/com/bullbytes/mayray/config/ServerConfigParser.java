@@ -5,11 +5,8 @@ import com.bullbytes.mayray.utils.ParseUtil;
 import com.bullbytes.mayray.utils.PropertiesUtil;
 import io.vavr.API;
 import io.vavr.Tuple2;
-import io.vavr.collection.Array;
-import io.vavr.collection.List;
 import io.vavr.collection.Map;
 import io.vavr.collection.Seq;
-import io.vavr.control.Either;
 import io.vavr.control.Validation;
 
 import java.nio.file.Path;
@@ -30,13 +27,6 @@ public enum ServerConfigParser {
     private static final String KEY_STORE_PASSWORD_KEY = "keystorePassword";
     private static final String KEY_STORE_PATH_KEY = "keystorePath";
 
-    private static Either<FailMessage, Path> getConfigFilePath(String[] args) {
-        return Array.of(args).headOption().fold(() ->
-                        Either.left(FailMessage.create("Please pass a configuration file. " +
-                                "For example: './gradlew run --args=\"./config/server.properties\"'")),
-                configPath -> Either.right(Path.of(configPath)));
-    }
-
     /**
      * Parses the {@link ServerConfig} from the {@link java.util.Properties} file whose path is expected to be the
      * first element of {@code args}.
@@ -46,18 +36,13 @@ public enum ServerConfigParser {
      * ./gradlew run --args="./config/server.properties"
      * </pre>
      *
-     * @param args the command line arguments passed to the program's main method
+     * @param configPath {@link Path} to the configuration file to read
      * @return the {@link ServerConfig} parsed from the properties file together with its file path or the
      * {@link FailMessage}s if that didn't work
      */
-    public static Validation<Seq<FailMessage>, Tuple2<ServerConfig, Path>> fromPropertiesFile(String[] args) {
-        return getConfigFilePath(args).fold(
-                msg -> Invalid(List.of(msg)),
-                configPath -> {
-                    var confVal = fromMap(PropertiesUtil.readProperties(configPath));
-                    return confVal.map(configFile -> Tuple(configFile, configPath));
-                }
-        );
+    public static Validation<Seq<FailMessage>, Tuple2<ServerConfig, Path>> fromPropertiesFile(Path configPath) {
+        var confVal = fromMap(PropertiesUtil.readProperties(configPath));
+        return confVal.map(configFile -> Tuple(configFile, configPath));
     }
 
     static Validation<Seq<FailMessage>, ServerConfig> fromMap(Map<String, String> propMap) {

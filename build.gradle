@@ -3,7 +3,7 @@
 // Wrapper API: https://docs.gradle.org/current/dsl/org.gradle.api.tasks.wrapper.Wrapper.html
 wrapper {
     // https://docs.gradle.org/current/release-notes.html
-    gradleVersion = "5.4.1"
+    gradleVersion = "5.5"
     // Include Gradle documentation and source
     distributionType = Wrapper.DistributionType.ALL
 }
@@ -24,9 +24,6 @@ applicationDefaultJvmArgs +=
                 // application's objects. The VM, especially the garbage collector, might use some of it, too.
                 // See: http://hg.openjdk.java.net/jdk9/jdk9/hotspot/file/6dc8db7164d2/src/share/vm/gc_interface/collectedHeap.hpp#l234
                 "-Xmx2g"
-                // Workaround for infinite loop caused by JDK bug implementing TLS:
-                // https://stackoverflow.com/questions/56708300/httpsserver-causes-100-cpu-load-with-curl
-                //, "-Djdk.tls.acknowledgeCloseNotify=true"
 
                 // If we add this flag also to the compiler arguments, we can use JDK preview features like switch expressions
                 , "--enable-preview"
@@ -36,7 +33,6 @@ applicationDefaultJvmArgs +=
 tasks.withType(JavaCompile).each {
     it.options.compilerArgs.add('--enable-preview')
 }
-
 
 repositories {
     mavenCentral()

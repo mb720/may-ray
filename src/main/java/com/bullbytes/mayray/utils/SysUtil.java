@@ -48,6 +48,15 @@ public enum SysUtil {
         return Try.of(() -> toString(processBuilder.start().getInputStream()));
     }
 
+    public static Try<String> callBash(String command) {
+
+        var bash = "/usr/bin/bash";
+
+        var commandOption = "-c";
+
+        return call(bash, commandOption, command);
+    }
+
     private static String toString(InputStream stream) throws IOException {
         return new String(stream.readAllBytes(), StandardCharsets.UTF_8);
     }
@@ -69,7 +78,6 @@ public enum SysUtil {
             log.info("Open file descriptors: {} (max: {})", unixBean.getOpenFileDescriptorCount(), unixBean.getMaxFileDescriptorCount());
 
             log.info("Available processors: {}", unixBean.getAvailableProcessors());
-            log.info("Last minute's system load average (runnable entities queued and ran): {}", unixBean.getSystemLoadAverage());
             log.info("Recent JVM CPU load: {}", unixBean.getProcessCpuLoad());
             log.info("Recent system CPU load: {}", unixBean.getSystemCpuLoad());
 
@@ -79,9 +87,23 @@ public enum SysUtil {
 
             logCurrentSockets();
 
+            logInodeInfo();
+
             return true;
         });
+    }
 
+    private static void logInodeInfo() {
+
+        String command = "df -i";
+        callBash(command)
+                .fold(error -> {
+                    log.warn("Error getting inodes info with command '{}'", command, error);
+                    return false;
+                }, result -> {
+                    log.info("Inodes info:\n{}", result);
+                    return true;
+                });
     }
 
     private static void logProcessInfo() {
@@ -100,16 +122,12 @@ public enum SysUtil {
 
     private static void logCurrentSockets() {
         String javaProcessId = String.valueOf(ProcessHandle.current().pid());
-        var bash = "/usr/bin/bash";
 
-        var commandOption = "-c";
         var ssAndGrep = format("ss -nap | grep %s", javaProcessId);
 
-        String[] commandArray = {bash, commandOption, ssAndGrep};
-
-        call(commandArray)
+        callBash(ssAndGrep)
                 .fold(error -> {
-                    log.warn("Error executing command '{}'", String.join(" ", commandArray), error);
+                    log.warn("Error getting sockets of Java process with command '{}'", ssAndGrep, error);
                     return false;
                 }, result -> {
                     log.info("Current sockets:\n{}", result);

@@ -3,7 +3,7 @@ package com.bullbytes.mayray.utils;
 import static java.lang.String.format;
 
 /**
- * Represents why a computation has not succeeded.
+ * Describes why a computation has not succeeded.
  * <p>
  * Person of contact: Matthias Braun
  */

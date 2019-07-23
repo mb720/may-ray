@@ -59,7 +59,7 @@ public final class Request {
      */
     public static Either<FailMessage, Request> create(Seq<String> headerLines, BufferedReader bodyStream) {
         return headerLines.headOption()
-                .toEither(() -> FailMessage.create("Can not parse request since there are no lines in the header"))
+                .toEither(() -> FailMessage.create("Cannot parse request since there are no lines in the header"))
                 .flatMap(requestLine -> ParseUtil.getGroups3(REQUEST_LINE_REGEX, requestLine)
                         .toEither(FailMessage.formatted("Could not parse request method, resource, and " +
                                 "HTTP version from request line. Request line is '%s'", requestLine))

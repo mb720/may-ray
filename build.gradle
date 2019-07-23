@@ -52,4 +52,26 @@ dependencies {
     // https://github.com/tipsy/j2html
     // https://mvnrepository.com/artifact/com.j2html/j2html
     compile 'com.j2html:j2html:1.4.0'
+
+
+    // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
+    testImplementation('org.junit.jupiter:junit-jupiter-api:5.4.0')
+    testRuntimeOnly('org.junit.jupiter:junit-jupiter-engine:5.4.0')
+}
+
+// Configure how our unit tests are executed.
+// See https://docs.gradle.org/current/dsl/org.gradle.api.tasks.testing.Test.html
+test {
+    // EnableJUnit 5 support
+    useJUnitPlatform()
+
+    jvmArgs "--enable-preview"
+
+    testLogging {
+        events "passed", "skipped", "failed"
+        // When a unit test fails show the reason why
+        exceptionFormat = "full"
+        // Show log messages which are printed to stderr
+        showStandardStreams = true
+    }
 }

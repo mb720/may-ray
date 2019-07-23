@@ -66,7 +66,7 @@ public enum ParseUtil {
     public static Option<Tuple3<String, String, String>> getGroups3(Pattern regex,
                                                                     CharSequence original) {
         var matcher = regex.matcher(original);
-        return matcher.matches() ?
+        return matcher.matches() && matcher.groupCount() == 3 ?
                 Some(Tuple.of(matcher.group(1), matcher.group(2), matcher.group(3))) :
                 Option.none();
     }

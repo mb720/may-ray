@@ -1,8 +1,8 @@
 package com.bullbytes.mayray.http.responses;
 
 import com.bullbytes.mayray.http.headers.HttpHeader;
-import com.bullbytes.mayray.http.requests.RequestMethod;
 import com.bullbytes.mayray.http.headers.InlineOrAttachment;
+import com.bullbytes.mayray.http.requests.RequestMethod;
 import io.vavr.collection.Seq;
 import j2html.tags.Renderable;
 import org.slf4j.Logger;
@@ -15,6 +15,9 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
+import static com.bullbytes.mayray.http.headers.HttpHeader.*;
+import static com.bullbytes.mayray.http.responses.ContentType.TEXT_HTML;
+import static com.bullbytes.mayray.http.responses.ContentType.TEXT_PLAIN;
 import static com.bullbytes.mayray.http.responses.StatusCode.METHOD_NOT_ALLOWED;
 import static com.bullbytes.mayray.http.responses.StatusCode.SUCCESS;
 import static java.lang.String.format;
@@ -38,7 +41,7 @@ public enum Responses {
 
         String response = statusLine(code) +
                 contentLength(bodyWithNewLine) +
-                contentType(ContentType.TEXT_PLAIN) +
+                contentType(TEXT_PLAIN) +
                 "\r\n" +
                 bodyWithNewLine;
 
@@ -46,7 +49,7 @@ public enum Responses {
     }
 
     private static String contentType(ContentType textPlain) {
-        return mkHeader(HttpHeader.CONTENT_TYPE, format("%s; charset=%s", textPlain, ENCODING.displayName()));
+        return mkHeader(CONTENT_TYPE, format("%s; charset=%s", textPlain, ENCODING.displayName()));
     }
 
     private static String statusLine(StatusCode code) {
@@ -58,7 +61,7 @@ public enum Responses {
     }
 
     private static String contentLength(String content) {
-        return mkHeader(HttpHeader.CONTENT_LENGTH, content.getBytes(ENCODING).length);
+        return mkHeader(CONTENT_LENGTH, content.getBytes(ENCODING).length);
     }
 
     public static byte[] plainText(String body) {
@@ -69,24 +72,24 @@ public enum Responses {
 
         var allowHeader = allowedMethods.isEmpty() ?
                 "" :
-                mkHeader(HttpHeader.ALLOW,
-                        allowedMethods
-                                .map(Enum::toString)
+                mkHeader(ALLOW,
+                        allowedMethods.map(Enum::toString)
                                 .collect(joining(", ")));
 
         return (statusLine(METHOD_NOT_ALLOWED) +
                 allowHeader +
-                mkHeader(HttpHeader.CONTENT_LENGTH, -1))
-                .getBytes(ENCODING);
+                mkHeader(CONTENT_LENGTH, -1)
+        ).getBytes(ENCODING);
     }
 
-    public static byte[] html(Renderable unrenderedHtml) {
-        String html = unrenderedHtml.render();
+    public static byte[] html(Renderable htmlToRender) {
+        String html = htmlToRender.render();
         return (statusLine(SUCCESS) +
                 contentLength(html) +
-                contentType(ContentType.TEXT_HTML) + "\r\n" +
-                html)
-                .getBytes(ENCODING);
+                contentType(TEXT_HTML) +
+                "\r\n" +
+                html
+        ).getBytes(ENCODING);
     }
 
     public static byte[] file(URL fileUrl,
@@ -99,10 +102,10 @@ public enum Responses {
             var fileName = new File(fileUrl.getPath()).getName();
 
             String header = statusLine(SUCCESS) +
-                    mkHeader(HttpHeader.CONTENT_LENGTH, bytesOfFile.length) +
+                    mkHeader(CONTENT_LENGTH, bytesOfFile.length) +
                     contentType(contentType) +
-                    contentDisposition(inlineOrAttachment, fileName) +
-                    "\r\n";
+                    contentDisposition(inlineOrAttachment, fileName)
+                    + "\r\n";
 
             response = concat(header.getBytes(ENCODING), bytesOfFile);
         } catch (IOException e) {
@@ -110,7 +113,6 @@ public enum Responses {
             log.warn(msg, e);
             response = plainText(msg, StatusCode.SERVER_ERROR);
         }
-
         return response;
     }
 
@@ -125,8 +127,7 @@ public enum Responses {
     private static String contentDisposition(InlineOrAttachment inlineOrAttachment, String fileName) {
         // "inline" makes the browser try to show the file inside the browser (works for images, for example),
         // "attachment" causes browsers display the "save as" dialog
-        return mkHeader(HttpHeader.CONTENT_DISPOSITON,
-                format("%s; filename=%s", inlineOrAttachment, fileName))
-                + "\r\n";
+        return mkHeader(CONTENT_DISPOSITON,
+                format("%s; filename=%s", inlineOrAttachment, fileName));
     }
 }

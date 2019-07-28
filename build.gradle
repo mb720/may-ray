@@ -46,7 +46,7 @@ dependencies {
 
     // Allows for more functional programming by providing, for example, Either, Try, and new collections (List, Map):
     // https://mvnrepository.com/artifact/io.vavr/vavr
-    compile 'io.vavr:vavr:0.10.0'
+    compile 'io.vavr:vavr:0.10.1'
 
     // Creates HTML:
     // https://github.com/tipsy/j2html

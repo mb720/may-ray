@@ -2,13 +2,10 @@ package com.bullbytes.mayray.utils;
 
 
 import org.slf4j.Logger;
-        import org.slf4j.LoggerFactory;
+import org.slf4j.LoggerFactory;
 
-        import java.util.Optional;
-        import java.util.concurrent.ExecutorService;
-        import java.util.concurrent.LinkedBlockingDeque;
-        import java.util.concurrent.ThreadPoolExecutor;
-        import java.util.concurrent.TimeUnit;
+import java.util.Optional;
+import java.util.concurrent.*;
 
 /**
  * Helps with {@link Thread}s.
@@ -18,6 +15,18 @@ import org.slf4j.Logger;
 public enum ThreadUtil {
     ;
     private static final Logger log = LoggerFactory.getLogger(ThreadUtil.class);
+
+    /**
+     * Creates an {@link ExecutorService} that keeps its threads alive for reuse.
+     *
+     * @param maximumNumberOfThreads the maximum number of threads the returned {@link ExecutorService} will create
+     * @return an {@link ExecutorService} that keeps its threads alive for reuse
+     */
+    public static ExecutorService newCachedThreadPool(int maximumNumberOfThreads) {
+        return new ThreadPoolExecutor(0, maximumNumberOfThreads,
+                60L, TimeUnit.SECONDS,
+                new SynchronousQueue<>());
+    }
 
     /**
      * @return an {@link ExecutorService} that assigns threads to task in a last in first out order. The
@@ -67,7 +76,7 @@ public enum ThreadUtil {
     private static final class BlockingStack<E> extends LinkedBlockingDeque<E> {
 
         @Override
-        public  boolean offer(E e) {
+        public boolean offer(E e) {
             return offerFirst(e);
         }
 

@@ -24,7 +24,6 @@ public final class ServerConfig {
         this.keyStorePassword = Option.of(keyStorePassword);
     }
 
-
     public String getHost() {
         return host;
     }
@@ -36,31 +35,26 @@ public final class ServerConfig {
     /**
      * Gets a copy of the keystore password that contains the server's certificate.
      * <p>
-     * Note that this will return {@link Option.None} after the password was overwritten using {@link #wipePasswords()}.
+     * Note that this method will return {@link Option.None} when calling it a second time since the password was
+     * overwritten.
      * <p>
-     * Callers that store this password as a field, are responsible of overwriting it themselves, as soon as they
+     * Callers that store this password as a field, are responsible of overwriting it themselves as soon as they
      * don't need the password anymore.
      *
      * @return a copy of the keystore password
      */
     public Option<char[]> getKeyStorePassword() {
-        return keyStorePassword.flatMap(p -> Option.of(p.clone()));
+        return keyStorePassword.flatMap(p -> {
+            var passwordCopy = p.clone();
+            /// We overwrite passwords to reduce the time they are in memory and could therefor be retrieved by an attacker
+            // who has access to the JVM.
+            Arrays.fill(p, '0');
+            keyStorePassword = Option.none();
+            return Option.of(passwordCopy);
+        });
     }
 
     public Path getKeyStorePath() {
         return keyStorePath;
-    }
-
-    /**
-     * Overwrites all the passwords that this {@link ServerConfig} holds.
-     * <p>
-     * After calling this method, methods like {@link #getKeyStorePassword()} return incorrect passwords.
-     * <p>
-     * We overwrite passwords to reduce the time they are in memory and could therefor be retrieved by an attacker
-     * who has access to the JVM.
-     */
-    public void wipePasswords() {
-        keyStorePassword.forEach(p -> Arrays.fill(p, '0'));
-        keyStorePassword = Option.none();
     }
 }

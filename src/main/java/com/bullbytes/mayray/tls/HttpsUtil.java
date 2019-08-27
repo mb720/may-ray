@@ -1,4 +1,4 @@
-package com.bullbytes.mayray.http;
+package com.bullbytes.mayray.tls;
 
 import io.vavr.control.Try;
 

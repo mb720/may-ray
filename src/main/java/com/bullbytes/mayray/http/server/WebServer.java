@@ -1,7 +1,7 @@
 package com.bullbytes.mayray.http.server;
 
 import com.bullbytes.mayray.config.ServerConfig;
-import com.bullbytes.mayray.http.HttpsUtil;
+import com.bullbytes.mayray.tls.HttpsUtil;
 import com.bullbytes.mayray.http.Route;
 import com.bullbytes.mayray.http.requests.Request;
 import com.bullbytes.mayray.http.responses.Responses;

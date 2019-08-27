@@ -51,7 +51,7 @@ public final class Request {
     }
 
     /**
-     * Creates a {@link Request} from the {@code headerLines} and the {@code bodyStream}
+     * Creates a {@link Request} from the {@code headerLines} and the {@code bodyStream}.
      *
      * @param headerLines the lines of the header such as "GET /resource HTTP 1.1", "Host: ...", "User-Agent: ..."
      * @param bodyStream  the body of the message, as a {@link BufferedReader}
@@ -110,7 +110,7 @@ public final class Request {
         return resource;
     }
 
-    public BufferedReader getBodyStream() {
+    BufferedReader getBodyStream() {
         return bodyStream;
     }
 

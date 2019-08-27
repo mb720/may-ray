@@ -3,6 +3,7 @@ package com.bullbytes.mayray;
 import com.bullbytes.mayray.config.CommandLineArgsParser;
 import com.bullbytes.mayray.config.ServerConfig;
 import com.bullbytes.mayray.config.ServerConfigParser;
+import com.bullbytes.mayray.http.Route;
 import com.bullbytes.mayray.http.requests.Request;
 import com.bullbytes.mayray.http.requests.Requests;
 import com.bullbytes.mayray.http.responses.FileResponses;
@@ -81,25 +82,25 @@ public enum Start {
                 },
                 serverConfigAndPath -> {
                     var configFilePath = serverConfigAndPath._2.toAbsolutePath().normalize();
-                    log.info("Read configuration from {}", configFilePath);
+                    log.info("Using server configuration at {}", configFilePath);
 
-                    startNewServer(serverConfigAndPath._1, tlsStatus);
+                    startServer(serverConfigAndPath._1, tlsStatus);
                     return true;
                 });
     }
 
-    private static void startNewServer(ServerConfig config, TlsStatus tlsStatus) {
+    private static void startServer(ServerConfig config, TlsStatus tlsStatus) {
         WebServer.go(config, tlsStatus,
-                wire("/", Start::getRootResponse),
-                wire("/coffee", request ->
+                route("Root response", "/", Start::getRootResponse),
+                route("Coffee response", "/coffee", request ->
                         Responses.plainText("Can't give you coffee, but here's some tea: 🍵", StatusCode.TEAPOT)),
-                wire("/list\\?.+", FileResponses::listFiles),
-                wire("/get\\?.+", FileResponses::zipDir),
-                wire("/ada.*", PersonResponses::ada),
-                wire("/spj.*", PersonResponses::simonPeytonJones),
-                wire("/linus.*", PersonResponses::linus),
-                wire("/grace.*", PersonResponses::graceHopper),
-                wire("/stats.*", request -> {
+                route("List files", "/list\\?.+", FileResponses::listFiles),
+                route("Get directory", "/get\\?.+", FileResponses::zipDir),
+                route("Ada responses", "/ada.*", PersonResponses::ada),
+                route("Simon Peyton Jones responses", "/spj.*", PersonResponses::simonPeytonJones),
+                route("Linus Torvalds responses", "/linus.*", PersonResponses::linus),
+                route("Grace Hopper responses", "/grace.*", PersonResponses::graceHopper),
+                route("Log system resources", "/stats.*", request -> {
                     SysUtil.logSystemStats();
                     return Responses.plainText("📊 Now logging system stats on the server");
                 })
@@ -117,9 +118,11 @@ public enum Start {
         };
     }
 
-    private static Tuple2<Pattern, Function<Request, byte[]>> wire(String resourceRegex,
-                                                                   Function<Request, byte[]> handler) {
-        return new Tuple2<>(Pattern.compile(resourceRegex), handler);
+    private static Route route(String routeName,
+                               String resourceRegex,
+                               Function<Request, byte[]> handler) {
+
+        return Route.create(Pattern.compile(resourceRegex), routeName, handler);
     }
 
     private static void configureLogging(String appName) {

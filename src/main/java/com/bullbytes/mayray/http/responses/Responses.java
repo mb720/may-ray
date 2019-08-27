@@ -107,6 +107,8 @@ public enum Responses {
                     contentDisposition(inlineOrAttachment, fileName)
                     + "\r\n";
 
+            log.info("Header for file response: '{}'", header);
+
             response = concat(header.getBytes(ENCODING), bytesOfFile);
         } catch (IOException e) {
             var msg = format("Could not read file at URL '%s'", fileUrl);
@@ -126,7 +128,7 @@ public enum Responses {
 
     private static String contentDisposition(InlineOrAttachment inlineOrAttachment, String fileName) {
         // "inline" makes the browser try to show the file inside the browser (works for images, for example),
-        // "attachment" causes browsers display the "save as" dialog
+        // "attachment" causes browsers to display the "save as" dialog
         return mkHeader(CONTENT_DISPOSITON,
                 format("%s; filename=%s", inlineOrAttachment, fileName));
     }

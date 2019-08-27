@@ -3,7 +3,7 @@
 // Wrapper API: https://docs.gradle.org/current/dsl/org.gradle.api.tasks.wrapper.Wrapper.html
 wrapper {
     // https://docs.gradle.org/current/release-notes.html
-    gradleVersion = "5.5"
+    gradleVersion = "5.6"
     // Include Gradle documentation and source
     distributionType = Wrapper.DistributionType.ALL
 }
@@ -16,7 +16,7 @@ mainClassName = "com.bullbytes.mayray.Start"
 
 sourceCompatibility = 12
 
-// Define JVM options and system properties
+// Define JVM options and system properties.
 // Here's more on defining options: https://docs.oracle.com/javase/8/docs/technotes/tools/unix/java.html
 applicationDefaultJvmArgs +=
         [
@@ -34,6 +34,7 @@ tasks.withType(JavaCompile).each {
     it.options.compilerArgs.add('--enable-preview')
 }
 
+// We get our dependencies from these repositories
 repositories {
     mavenCentral()
 }
@@ -46,7 +47,7 @@ dependencies {
 
     // Allows for more functional programming by providing, for example, Either, Try, and new collections (List, Map):
     // https://mvnrepository.com/artifact/io.vavr/vavr
-    compile 'io.vavr:vavr:0.10.1'
+    compile 'io.vavr:vavr:0.10.2'
 
     // Creates HTML:
     // https://github.com/tipsy/j2html
@@ -55,8 +56,8 @@ dependencies {
 
 
     // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
-    testImplementation('org.junit.jupiter:junit-jupiter-api:5.4.0')
-    testRuntimeOnly('org.junit.jupiter:junit-jupiter-engine:5.4.0')
+    testImplementation('org.junit.jupiter:junit-jupiter-api:5.5.1')
+    testRuntimeOnly('org.junit.jupiter:junit-jupiter-engine:5.5.1')
 }
 
 // Configure how our unit tests are executed.
@@ -69,7 +70,7 @@ test {
 
     testLogging {
         events "passed", "skipped", "failed"
-        // When a unit test fails show the reason why
+        // When a unit test fails, show the reason why
         exceptionFormat = "full"
         // Show log messages which are printed to stderr
         showStandardStreams = true

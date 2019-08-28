@@ -90,8 +90,8 @@ public enum WebServer {
                         responseStream.write(response);
 
                         // It's important to flush the response stream before closing it to make sure any
-                        // unsent bytes in the buffer are sent via the socket before closing the socket.
-                        // Otherwise the client doesn't get the complete response
+                        // unsent bytes in the buffer are sent via the socket. Otherwise, the client gets an
+                        // incomplete response
                         responseStream.flush();
 
                         socket.close();

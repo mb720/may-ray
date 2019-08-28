@@ -11,17 +11,28 @@ import java.util.regex.Pattern;
  * Person of contact: Matthias Braun
  */
 public final class Route {
-    private final String handlerName;
+    private final String routeName;
     private final Function<Request, byte[]> handleRequest;
     private final Pattern resourcePath;
 
-    private Route(Pattern resourcePath, String handlerName, Function<Request, byte[]> handleRequest) {
+    private Route(Pattern resourcePath, String routeName, Function<Request, byte[]> handleRequest) {
         this.resourcePath = resourcePath;
-        this.handlerName = handlerName;
+        this.routeName = routeName;
         this.handleRequest = handleRequest;
     }
 
-    public static Route create(Pattern resourcePath, String routeName, Function<Request, byte[]> handleRequest) {
+    /**
+     * Creates a new {@link Route}.
+     *
+     * @param resourcePath  if this {@link Pattern} matches the resource the client has requested, this {@link Route}
+     *                      will create a response to the request
+     * @param routeName     the name of this {@link Route}
+     * @param handleRequest a {@link Function} that turns the client's {@link Request} into a response
+     * @return an initialized {@link Route}
+     */
+    public static Route create(Pattern resourcePath,
+                               String routeName,
+                               Function<Request, byte[]> handleRequest) {
         return new Route(resourcePath, routeName, handleRequest);
     }
 
@@ -34,6 +45,6 @@ public final class Route {
     }
 
     public String getName() {
-        return handlerName;
+        return routeName;
     }
 }

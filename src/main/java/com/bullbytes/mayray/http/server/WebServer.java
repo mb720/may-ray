@@ -1,11 +1,11 @@
 package com.bullbytes.mayray.http.server;
 
 import com.bullbytes.mayray.config.ServerConfig;
-import com.bullbytes.mayray.tls.HttpsUtil;
 import com.bullbytes.mayray.http.Route;
 import com.bullbytes.mayray.http.requests.Request;
 import com.bullbytes.mayray.http.responses.Responses;
 import com.bullbytes.mayray.http.responses.StatusCode;
+import com.bullbytes.mayray.tls.HttpsUtil;
 import com.bullbytes.mayray.tls.TlsStatus;
 import com.bullbytes.mayray.utils.ThreadUtil;
 import io.vavr.collection.List;
@@ -19,11 +19,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 
 import static com.bullbytes.mayray.utils.FormattingUtil.humanReadableBytes;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Provides a minimal HTTP server, with and without TLS.
@@ -59,22 +59,19 @@ public enum WebServer {
                 // Create a server socket without TLS
                 new ServerSocket(config.getPort(), 0, address.getAddress())) {
 
-            handleRequests(serverSocket, routes);
+            handleRequests(serverSocket, List.of(routes));
         } catch (Exception e) {
             log.warn("Could not start server at {}", address, e);
         }
     }
 
     private static void handleRequests(ServerSocket serverSocket,
-                                       Route[] routes) {
+                                       Seq<Route> routes) {
 
         var threadPool = ThreadUtil.newCachedThreadPool(8);
 
-        // Used to read from the socket's input and output stream
-        var encoding = StandardCharsets.UTF_8;
-
         // This endless loop is not CPU-intense since method "accept" blocks until a client has made a connection to
-        // the socket's port
+        // the socket
         while (true) {
             try {
                 // We'll close the socket inside the lambda passed to the thread pool. If we didn't close it,
@@ -82,27 +79,28 @@ public enum WebServer {
                 var socket = serverSocket.accept();
                 // Create a response to the request on a separate thread to handle multiple requests simultaneously
                 threadPool.submit(() -> {
-                    try ( // Use the socket to read the data the client has sent us
-                          var reader = new BufferedReader(new InputStreamReader(socket.getInputStream(), encoding.name()));
-                          var outputStream = new BufferedOutputStream(socket.getOutputStream())
+                    try ( // Read the client's request from the socket
+                          var requestStream = new BufferedReader(new InputStreamReader(socket.getInputStream(), UTF_8.name()));
+                          // The server writes its response to the socket's output stream
+                          var responseStream = new BufferedOutputStream(socket.getOutputStream())
                     ) {
-                        byte[] response = getResponse(reader, List.of(routes));
+                        byte[] response = getResponse(requestStream, routes);
                         log.info("About to send a response of size {}", humanReadableBytes(response.length));
 
-                        outputStream.write(response);
+                        responseStream.write(response);
 
-                        // It's important to flush the output stream before closing it to make sure any
+                        // It's important to flush the response stream before closing it to make sure any
                         // unsent bytes in the buffer are sent via the socket before closing the socket.
                         // Otherwise the client doesn't get the complete response
-                        outputStream.flush();
+                        responseStream.flush();
 
                         socket.close();
                     } catch (Exception e) {
-                        log.warn("Exception while processing connection", e);
+                        log.warn("Exception while creating response", e);
                     }
                 });
             } catch (IOException e) {
-                log.warn("Exception occurred while handling connection", e);
+                log.warn("Exception while waiting for a client connection", e);
             }
         }
     }
@@ -122,11 +120,11 @@ public enum WebServer {
     }
 
     /**
-     * Produces a response to the the client request using one of the provided {@code routes}.
+     * Produces a response to the client's request using one of the provided {@code routes}.
      *
      * @param requestStream this {@link BufferedReader} contains the client's request
      * @param routes        when the {@link Pattern} of one of these {@link Route}s matches the requested resource (read
-     *                      from the {@code requestStream}) we use it to produce a response
+     *                      from the {@code requestStream}), we use the route to produce a response
      * @return the response for the request as an array of bytes
      */
     private static byte[] getResponse(BufferedReader requestStream,
@@ -143,7 +141,7 @@ public enum WebServer {
                         // Get the first route that matches the requested resource to create a response
                         routes
                                 .find(route -> route.matches(request.getResource()))
-                                .peek(route -> log.info("Using route '{}'", route.getName()))
+                                .peek(route -> log.info("Using route '{}' for resource '{}'", route.getName(), request.getResource()))
                                 .map(route -> route.getResponse(request))
                                 .getOrElse(() -> {
                                     log.info("No route for requested resource '{}'", request.getResource());

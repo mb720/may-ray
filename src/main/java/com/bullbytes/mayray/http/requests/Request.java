@@ -35,19 +35,19 @@ public final class Request {
     private final String resource;
     private final String httpVersion;
     private final Map<String, String> headers;
-    private final BufferedReader bodyStream;
+    private final BufferedReader body;
 
     private Request(RequestMethod method,
                     String resource,
                     String httpVersion,
                     Map<String, String> headers,
-                    BufferedReader bodyStream) {
+                    BufferedReader body) {
 
         this.method = method;
         this.resource = resource;
         this.httpVersion = httpVersion;
         this.headers = headers;
-        this.bodyStream = bodyStream;
+        this.body = body;
     }
 
     /**
@@ -63,7 +63,7 @@ public final class Request {
                 .flatMap(requestLine -> ParseUtil.getGroups3(REQUEST_LINE_REGEX, requestLine)
                         .toEither(FailMessage.formatted("Could not parse request method, resource, and " +
                                 "HTTP version from request line. Request line is '%s'", requestLine))
-                        .flatMap(tuple3 -> tuple3.apply((methodStr, resource, httpVersion) ->
+                        .flatMap(methodResourceAndVersion -> methodResourceAndVersion.apply((methodStr, resource, httpVersion) ->
                                         parseRequestMethod(methodStr)
                                                 .map(method -> new Request(method,
                                                         resource,
@@ -106,18 +106,30 @@ public final class Request {
         return method;
     }
 
+    /**
+     * @return the requested resource
+     */
     public String getResource() {
         return resource;
     }
 
-    BufferedReader getBodyStream() {
-        return bodyStream;
+    /**
+     * @return the request's body
+     */
+    public BufferedReader getBody() {
+        return body;
     }
 
+    /**
+     * @return the headers of the request
+     */
     public Map<String, String> getHeaders() {
         return headers;
     }
 
+    /**
+     * @return the version of the request's Hypertext Transfer Protocol
+     */
     public String getHttpVersion() {
         return httpVersion;
     }

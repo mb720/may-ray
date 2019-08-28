@@ -20,7 +20,7 @@ public enum Requests {
     public static Either<FailMessage, String> getBody(Request request) {
         return HeaderUtil.getContentLength(request.getHeaders())
                 .flatMap(contentLength ->
-                        ReaderUtil.readChars(request.getBodyStream(), contentLength)
+                        ReaderUtil.readChars(request.getBody(), contentLength)
                                 .map(String::new)
                                 .peekLeft(error ->
                                         log.warn("Could not read {} chars (according to content length) from request",

@@ -67,10 +67,10 @@ public enum Start {
 
         logRuntimeInfo();
 
-        Tuple2<Path, TlsStatus> pair = CommandLineArgsParser.parse(args);
+        Tuple2<Path, TlsStatus> configPathAndTlsStatus = CommandLineArgsParser.parse(args);
 
-        Path configPath = pair._1;
-        TlsStatus tlsStatus = pair._2;
+        Path configPath = configPathAndTlsStatus._1;
+        TlsStatus tlsStatus = configPathAndTlsStatus._2;
 
         ServerConfigParser.fromPropertiesFile(configPath).fold(
                 messages -> {
@@ -120,9 +120,9 @@ public enum Start {
 
     private static Route route(String routeName,
                                String resourceRegex,
-                               Function<Request, byte[]> handler) {
+                               Function<Request, byte[]> requestHandler) {
 
-        return Route.create(Pattern.compile(resourceRegex), routeName, handler);
+        return Route.create(Pattern.compile(resourceRegex), routeName, requestHandler);
     }
 
     private static void configureLogging(String appName) {

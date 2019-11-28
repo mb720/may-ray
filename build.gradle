@@ -3,7 +3,7 @@
 // Wrapper API: https://docs.gradle.org/current/dsl/org.gradle.api.tasks.wrapper.Wrapper.html
 wrapper {
     // https://docs.gradle.org/current/release-notes.html
-    gradleVersion = "5.6"
+    gradleVersion = "6.0.1"
     // Include Gradle documentation and source
     distributionType = Wrapper.DistributionType.ALL
 }
@@ -14,7 +14,7 @@ apply plugin: "java"
 
 mainClassName = "com.bullbytes.mayray.Start"
 
-sourceCompatibility = 12
+sourceCompatibility = 13
 
 // Define JVM options and system properties.
 // Here's more on defining options: https://docs.oracle.com/javase/8/docs/technotes/tools/unix/java.html
@@ -43,16 +43,16 @@ dependencies {
     // Logging: https://www.slf4j.org/
     // Binding for java.util.logging, also referred to as JDK 1.4 logging
     // https://mvnrepository.com/artifact/org.slf4j/slf4j-jdk14
-    compile 'org.slf4j:slf4j-jdk14:1.8.0-beta4'
+    implementation 'org.slf4j:slf4j-jdk14:1.8.0-beta4'
 
     // Allows for more functional programming by providing, for example, Either, Try, and new collections (List, Map):
     // https://mvnrepository.com/artifact/io.vavr/vavr
-    compile 'io.vavr:vavr:0.10.2'
+    implementation 'io.vavr:vavr:0.10.2'
 
     // Creates HTML:
     // https://github.com/tipsy/j2html
     // https://mvnrepository.com/artifact/com.j2html/j2html
-    compile 'com.j2html:j2html:1.4.0'
+    implementation 'com.j2html:j2html:1.4.0'
 
 
     // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api

@@ -129,7 +129,7 @@ public enum Responses {
     private static String contentDisposition(InlineOrAttachment inlineOrAttachment, String fileName) {
         // "inline" makes the browser try to show the file inside the browser (works for images, for example),
         // "attachment" causes browsers to display the "save as" dialog
-        return mkHeader(CONTENT_DISPOSITON,
+        return mkHeader(CONTENT_DISPOSITION,
                 format("%s; filename=%s", inlineOrAttachment, fileName));
     }
 }

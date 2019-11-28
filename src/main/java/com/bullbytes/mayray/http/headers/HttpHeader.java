@@ -6,7 +6,9 @@ package com.bullbytes.mayray.http.headers;
  * Person of contact: Matthias Braun
  */
 public enum HttpHeader {
-    CONTENT_DISPOSITON("Content-Disposition"), ALLOW("Allow"), CONTENT_LENGTH("Content-Length"),
+    CONTENT_DISPOSITION("Content-Disposition"),
+    ALLOW("Allow"),
+    CONTENT_LENGTH("Content-Length"),
     CONTENT_TYPE("Content-Type");
 
     private final String text;

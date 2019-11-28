@@ -57,7 +57,7 @@ public enum FileResponses {
                         // The query doesn't contain which directory to download
                         .getOrElse(() -> Pages.needDirToDownload(DIR_KEY));
 
-                break Responses.html(pageToShow);
+                yield Responses.html(pageToShow);
             }
             // The user has entered the password via the password input element → Read the password from the request
             // body, decode it if necessary and show a listing of the directory if the password matches
